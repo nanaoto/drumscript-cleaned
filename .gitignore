@@ -1,6 +1,7 @@
 .venv
 .archive
 development/*
+development/
 .DS_Store*
 local_tests/*
 audio_processor/local_tests/*
