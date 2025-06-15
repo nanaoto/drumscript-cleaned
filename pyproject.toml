@@ -29,11 +29,14 @@ dependencies = [
     "numpy",
     "scipy",
     "librosa",
-    "scikit-learn", # Or tensorflow/pytorch
+    "scikit-learn",
     "music21",
-    # "mido", # Uncomment if truly needed
+    "mido", 
     "pyyaml",
-    "pydub", # Optional: if you need broader audio format support
+    "pydub",
+    "pytorch",
+    "soundfile",
+    "tensorflow"
 ]
 
 [project.urls]
