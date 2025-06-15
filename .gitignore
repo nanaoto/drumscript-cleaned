@@ -3,6 +3,4 @@
 development/*
 .DS_Store*
 local_tests/*
-audio_processor/local_tests/tests.md
-local_tests/audio_proc_tests/audio_proc_tests.md
-audio_processor/local_tests/guidance_shell_script.pdf
+audio_processor/local_tests/*
