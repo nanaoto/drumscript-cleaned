@@ -1,0 +1,53 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "DrumScript"
+version = "0.1.0"
+authors = [
+  { name="Your Name", email="your.email@example.com" },
+]
+description = "A Python package to convert drum audio to sheet music."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT License" } # Or use file = "LICENSE" if you have a LICENSE file
+keywords = ["drum", "audio", "music", "sheet-music", "notation", "dsp", "machine-learning"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Education",
+]
+dependencies = [
+    # List your direct runtime dependencies here
+    "numpy",
+    "scipy",
+    "librosa",
+    "scikit-learn", # Or tensorflow/pytorch
+    "music21",
+    # "mido", # Uncomment if truly needed
+    "pyyaml",
+    "pydub", # Optional: if you need broader audio format support
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/DrumScript"
+Repository = "https://github.com/your-username/DrumScript"
+"Bug Tracker" = "https://github.com/your-username/DrumScript/issues"
+
+# Optional: If you have data files inside your package that need to be included
+[tool.setuptools.package-data]
+"DrumScript" = ["data/*.csv"] # Example: include all .csv files in DrumScript/data/
+
+# Optional: If you want to customize how setuptools finds packages
+# By default, it finds all directories with __init__.py
+# [tool.setuptools.packages.find]
+# where = ["."] # Search for packages in the current directory
+# include = ["DrumScript*"] # Only include packages starting with DrumScript
+# exclude = ["tests*"] # Exclude test directories
