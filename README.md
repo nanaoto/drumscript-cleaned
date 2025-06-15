@@ -9,6 +9,8 @@ It leverages **advanced audio signal processing** and **machine learning** to de
 
 **[Package Structure](repository_structure.md)**
 
+<!-- **NOTE:** This package requires `Python 3.12+`-BLOT-OUT-FOR-NOW-AS-MIGHT-CHANGE-->
+
 ---
 
 ### Features
