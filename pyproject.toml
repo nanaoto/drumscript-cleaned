@@ -53,4 +53,4 @@ Repository = "https://github.com/your-username/DrumScript"
 # [tool.setuptools.packages.find]
 # where = ["."] # Search for packages in the current directory
 # include = ["DrumScript*"] # Only include packages starting with DrumScript
-# exclude = ["tests*"] # Exclude test directories
+# exclude = ["tests*","development*", "docs*", archive*] # Exclude test directories, docs, development and archive folders

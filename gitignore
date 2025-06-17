@@ -7,4 +7,3 @@ tests/*
 tests/
 audio_processor/local_tests/*
 dev_notes.txt
-.python-version
