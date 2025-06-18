@@ -1,7 +1,7 @@
 # DrumScript/audio_processor/audio_losder.py
 
 """
-This module will handle loading and basic normalization of audio files.
+This module will handle loading and basic normalisation of audio files.
 """
 
 # DrumScript/audio_processor/audio_loader.py
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         normalized_max = np.max(np.abs(normalized_audio))
         print(f"Original max amplitude: {original_max:.4f}")
         print(f"Normalized max amplitude: {normalized_max:.4f}")
-        assert np.isclose(normalized_max, 1.0) or np.isclose(normalized_max, 0.0), "Normalization failed!"
+        assert np.isclose(normalized_max, 1.0) or np.isclose(normalized_max, 0.0), "Normalisation failed!"
 
         # Clean up dummy file
         import os
