@@ -1,4 +1,4 @@
-# DrumScript/audio_processor/audio_loader.py
+#.audio_processor/audio_loader.py
 
 """
 This module will handle loading and basic normalisation of audio files.
