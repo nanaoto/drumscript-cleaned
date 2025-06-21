@@ -62,9 +62,7 @@ It leverages **advanced audio signal processing** and **machine learning** to de
 > Other `Python` package managers, ie `pip`, `conda`, `pyenv`, `hatch`, `poetry` may be used interchangeably with the commands above.
 ---
 ### Dependencies
-
-**`Python 3.12`**
-> 
+>
 A list of dependencies can be found in the **[requirements](requirements.txt)** and in **[pyproject.toml](pyproject.toml)**
 
 

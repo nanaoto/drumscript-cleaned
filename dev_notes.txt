@@ -3,3 +3,7 @@ dev_notes.txt
 sun-15-jun-2025:
 
 next steps: use actual audio filea to test audio_processor modeul and examine outouts
+
+sat-21-june-2025:
+
+% python3 audio_processor/audio_loader.py
