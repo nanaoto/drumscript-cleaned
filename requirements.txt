@@ -9,5 +9,6 @@ pydub
 llvmlite
 numba
 soundfile
+sounddevice
 #pytorch
 #tensorflow
