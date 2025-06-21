@@ -38,17 +38,80 @@ python3 audio_processor/audio_loader.py
     Audio playback finished.
     audio_loader.py example finished.
 
+
+
+##### `feature_extractor.py` 
+
 ```python
 python3 audio_processor/feature_extractor.py
 ```
 
-##### `feature_extractor.py`
 **expected output:**
 
+```
     Running feature_extractor.py example...
     Install 'soundfile' (pip install soundfile) to run this example fully.
     Skipping dummy file creation/deletion.
     feature_extractor.py example finished.
+```
+or, to **run `feature_extractor.py` as a module**
+
+```python
+python -m audio_processor.feature_extractor
+
+```
+
+**expected output:**
+
+```
+DrumScript % python -m audio_processor.feature_extractor 
+Running feature_extractor.py example with test.mp3...
+Attempting to load: DrumScript/tests/test.mp3
+Loaded audio: Shape=(324288,), Sample Rate=22050, Duration=14.71 seconds
+
+Detecting onsets...
+Detected 68 onsets.
+
+--- Features for Onset 1 (at 0.07s) ---
+  mfccs: shape=(180,), mean=8.2517
+  spectral_centroid: shape=(9,), mean=2826.1621
+  spectral_rolloff: shape=(9,), mean=6810.4736
+  zero_crossing_rate: shape=(9,), mean=0.1527
+  rms: shape=(9,), mean=0.2310
+
+--- Features for Onset 2 (at 0.28s) ---
+  mfccs: shape=(180,), mean=7.4435
+  spectral_centroid: shape=(9,), mean=2350.6134
+  spectral_rolloff: shape=(9,), mean=6206.3477
+  zero_crossing_rate: shape=(9,), mean=0.0832
+  rms: shape=(9,), mean=0.2055
+
+--- Features for Onset 3 (at 0.49s) ---
+  mfccs: shape=(180,), mean=4.0245
+  spectral_centroid: shape=(9,), mean=3365.3937
+  spectral_rolloff: shape=(9,), mean=7028.1982
+  zero_crossing_rate: shape=(9,), mean=0.1779
+  rms: shape=(9,), mean=0.1064
+
+--- Features for Onset 4 (at 0.70s) ---
+  mfccs: shape=(180,), mean=4.8659
+  spectral_centroid: shape=(9,), mean=2100.4735
+  spectral_rolloff: shape=(9,), mean=5347.4121
+  zero_crossing_rate: shape=(9,), mean=0.0668
+  rms: shape=(9,), mean=0.2111
+
+--- Features for Onset 5 (at 0.79s) ---
+  mfccs: shape=(180,), mean=1.0935
+  spectral_centroid: shape=(9,), mean=2497.4780
+  spectral_rolloff: shape=(9,), mean=5926.4160
+  zero_crossing_rate: shape=(9,), mean=0.0850
+  rms: shape=(9,), mean=0.1392
+
+feature_extractor.py example finished.
+(DrumScript) victoriamckinney@Victoria’s MacBook Air DrumScript % 
+
+
+```
 
 ##### `onset_detector.py`
 ```python
