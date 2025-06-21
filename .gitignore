@@ -7,3 +7,5 @@ tests/*
 tests/
 .python-version
 .development
+training_data/*
+training_data/
