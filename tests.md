@@ -17,7 +17,7 @@ It leverages **advanced audio signal processing** and **machine learning** to de
 #####  `audio_loader.py`
 
 
-```python 
+```
 python3 audio_processor/audio_loader.py
 ```
 
@@ -42,7 +42,7 @@ python3 audio_processor/audio_loader.py
 
 ##### `feature_extractor.py` 
 
-```python
+```
 python3 audio_processor/feature_extractor.py
 ```
 
@@ -57,7 +57,7 @@ python3 audio_processor/feature_extractor.py
 ```
 or, to run `feature_extractor.py` as a **module**
 
-```python
+```
 python -m audio_processor.feature_extractor
 ```
 
@@ -109,11 +109,10 @@ Detected 68 onsets.
 
 feature_extractor.py example finished.
 DrumScript % 
-
 ```
 
 ##### `onset_detector.py`
-```python
+```
 python3 audio_processor/onset_detector.py
 ```
 
@@ -129,9 +128,36 @@ python3 audio_processor/onset_detector.py
 or, to run `onset_detector.py` as a **module**
 
 
+```
+python3 -m audio_processor.onset_detector
+```
 **expected output:**
 
-    python3 -m  audio_processor.feature_extractor
+```zsh
+DrumScript % python3 -m audio_processor.onset_detector
+Running onset_detector.py example with test.mp3...
+Attempting to load: ~/DrumScript/tests/test.mp3
+Loaded audio: Shape=(324288,), Sample Rate=22050, Duration=14.71 seconds
+
+Detecting onsets from test.mp3...
+Detected 68 onsets.
+
+First 10 detected onsets (seconds):
+  Onset 1: 0.07s
+  Onset 2: 0.28s
+  Onset 3: 0.49s
+  Onset 4: 0.70s
+  Onset 5: 0.79s
+  Onset 6: 0.88s
+  Onset 7: 1.32s
+  Onset 8: 1.51s
+  Onset 9: 1.74s
+  Onset 10: 1.90s
+  ...and 58 more onsets.
+
+onset_detector.py example finished.
+DrumScript %  -
+```
 
 
 ---

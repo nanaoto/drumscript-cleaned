@@ -35,7 +35,7 @@ if __name__ == "__main__":
         # Go up two levels from audio_processor/onset_detector.py to the outer DRUMSCRIPT/ folder
         project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
         # Construct the path to test.mp3 within the 'tests' directory
-        test_mp3_path = os.path.join(project_root, "tests", "test.mp3")
+        test_mp3_path = os.path.join(project_root, "DrumScript/tests", "test.mp3")
 
 
         print(f"Attempting to load: {test_mp3_path}")
