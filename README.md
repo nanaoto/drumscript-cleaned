@@ -3,7 +3,7 @@
 <!--date_created: sun-15-june-2025-->
 <!--date_updated: sat-21-june-2025-->
 
-###### Python 3.12
+###### Python 3.12.10
 
 `DrumScript` is a `Python package` that **converts drum audio recordings into sheet music (drum notation) in PDF format**. 
 
