@@ -9,3 +9,5 @@ tests/
 .development
 training_data/*
 training_data/
+drum_classifier/__pycache__/
+drum_classifier/__pycache__/
