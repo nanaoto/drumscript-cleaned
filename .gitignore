@@ -41,3 +41,4 @@ training_data/
 # Logs and output
 *.log
 .ipynb_checkpoints/ # Jupyter notebooks
+logs.txt
