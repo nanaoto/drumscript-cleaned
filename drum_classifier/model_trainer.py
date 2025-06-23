@@ -77,7 +77,7 @@ if __name__ == "__main__":
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
 
     # Define paths for data and saved models
-    data_directory = os.path.join(project_root, "data")
+    data_directory = os.path.join(project_root, "training_data")
     model_save_directory = os.path.join(project_root, "models")
     
     # Ensure 'models' directory exists

@@ -122,12 +122,12 @@ def prepare_dataset(data_dir: str, sr: int = 22050, segment_length_seconds: floa
 if __name__ == "__main__":
     # Example Usage for data_preparer.py
     # This assumes you have a 'data' folder at your project root
-    # like DRUMSCRIPT/data/kick/, DRUMSCRIPT/data/snare/, DRUMSCRIPT/data/hihat/
+    # like DRUMSCRIPT/training_data/kick/, DRUMSCRIPT/training_data/snare/, DRUMSCRIPT/training_data/hihat/
 
     # Determine project root
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-    data_directory = os.path.join(project_root, "data") # Adjust if your data is elsewhere
+    data_directory = os.path.join(project_root, "training_data") # Adjust if your training data is elsewhere
 
     print(f"Attempting to prepare data from: {data_directory}")
 
