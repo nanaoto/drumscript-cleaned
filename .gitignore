@@ -4,8 +4,6 @@ __pycache__/
 *.pyd
 *.pyo
 *.cpython-312.pyc
-audio_processor/__pycache__/feature_extractor.cpython-312.pyc
-
 # Virtual environment
 .venv/
 venv/
