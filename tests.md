@@ -1,7 +1,7 @@
-## Testing Documentation
+## **Testing Documentation**
 
 <!--date_created: sat-21-june-2025-->
-<!--date_updated: sat-21-june-2025-->
+<!--date_updated: mon-23-june-2025-->
 
 `DrumScript` is a `Python package` that **converts drum audio recordings into sheet music (drum notation) in PDF format**. 
 
@@ -159,6 +159,44 @@ onset_detector.py example finished.
 DrumScript %  -
 ```
 
+#### **`drum_classifier/`**
+
+#####  `data_preparer.py`
+
+```
+python3 drum_classifier/data_preparer.py
+```
+
+
+...or, to run `data_preparer.py` as a **module**:
+
+```
+python3 -m drum_classifier.data_preparer
+```
+
+**expected output:**
+
+```
+(DrumScript) DrumScript % python3 -m drum_classifier.data_preparer          
+Attempting to prepare data from: ~/training_data
+Preparing dataset from: ~/training_data
+Processing 'hihat' sounds...
+Processing 'kick' sounds...
+Processing 'snare' sounds...
+
+Finished data preparation.
+Total samples: 9
+Feature dimension: 216
+Labels processed: {'hihat': 0, 'kick': 1, 'snare': 2}
+Features scaled using StandardScaler.
+
+Data preparation successful!
+Feature matrix shape (X): (9, 216)
+Labels vector shape (y): (9,)
+Label mapping: {'hihat': 0, 'kick': 1, 'snare': 2}
+Scaler saved to: ~/models/scaler.joblib
+Label map saved to: ~/models/label_map.json
+```
 
 ---
 <!--END-->
