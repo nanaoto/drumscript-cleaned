@@ -1,13 +1,45 @@
-.venv
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.cpython-312.pyc
+audio_processor/__pycache__/feature_extractor.cpython-312.pyc
+
+# Virtual environment
+.venv/
+venv/
+env/
+
 .archive
 development/*
 development/
-.DS_Store*
+
+# OS generated files
+.DS_Store
+.env
+
 tests/*
 tests/
 .python-version
 .development
+
+**/__pycache__/ # ignore all __pycache__ across the repo
+*/__pycache__/
+
+# Trained models and processed data (optional, but often good practise)
+
+# If you want to keep models in Git, remove or comment out these lines
+models/
+# If training_data contains large audio files you don't want to commit
+DrumScript/training_data/
 training_data/*
 training_data/
-drum_classifier/__pycache__/
-drum_classifier/__pycache__/
+
+# Specific IDE files
+.vscode/ # VS Code settings
+.idea/   # IntelliJ/PyCharm settings
+
+# Logs and output
+*.log
+.ipynb_checkpoints/ # Jupyter notebooks
