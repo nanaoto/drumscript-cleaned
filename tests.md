@@ -210,7 +210,7 @@ Label map saved to: ~DrumScript/models/label_map.json
 > 
 >Re-run `feature_extractor.py` with **a smaller value** for `n_fft`
 
-<!--In simple terms, your `feature_extractor.py` (which uses `librosa`) is trying to put a *listening window* of 2048 samples over a sound clip that is only 1274 samples long. While `librosa` will still try to perform the calculation (often by padding the shorter signal with zeros), this warning signals that the chosen `n_fft` might be too large for some of the very short drum hits or segments your `onset_detector` is extracting, potentially leading to less ideal feature extraction for those specific short sounds.--->
+<!--In simple terms, the `feature_extractor.py` (which uses `librosa`) is trying to put a *listening window* of 2048 samples over a sound clip that is only 1274 samples long. While `librosa` will still try to perform the calculation (often by padding the shorter signal with zeros), this warning signals that the chosen `n_fft` might be too large for some of the very short drum hits or segments the `onset_detector` is extracting, potentially leading to less ideal feature extraction for those specific short sounds.--->
 
 Once you run `data_preparer.py`, you will have a new folder in the root called `models` and, in that folder, two files: 
  - `/label_map.json`:
@@ -223,12 +223,12 @@ Once you run `data_preparer.py`, you will have a new folder in the root called `
 
 - `/scaler.joblib`:
 >
-   `scaler.joblib` stores the **parameters (*mean* and *standard deviation (s.d)*) of the `StandardScaler`** that was used to **normalise your features during data preparation**.
+   `scaler.joblib` stores the **parameters (*mean* and *standard deviation (s.d)*) of the `StandardScaler`** that was used to **normalise the features during data preparation**.
 
 
 > **IMPORTANT NOTE:**
 >
->It is absolutely critical that any new audio data you feed into your trained `drum_model.py` for prediction is scaled using the **exact same scaling parameters** as the `Data the model was trained on`. 
+>It is absolutely critical that any new audio data you feed into the trained `drum_model.py` for prediction is scaled using the **exact same scaling parameters** as the `Data the model was trained on`. 
 >
 >`drum_model.py` will load this `scaler.joblib` file to apply the identical scaling transformation to new drum sound features, ensuring the model receives data in the expected range. 
 >
@@ -301,21 +301,88 @@ Preparing dataset from: ~~DrumScript/training_data
 <!---Once `model_trainer.py` has run to completion, here is an overview of what it will have done:
 
   * **Data preparation:**
-    *  The script successfully loaded and processed your drum sound samples from `/training_data`, extracting 24 features for each.
-    *  It will have identified all drum labels and applied `StandardScaler` to your features.
+    *  The script successfully loaded and processed the drum sound samples from `/training_data`, extracting 24 features for each.
+    *  It will have identified all drum labels and applied `StandardScaler` to the features.
 * **Model training:**
-    * Your dataset was split into a training set of n samples and a test set of x samples.
+    * the dataset was split into a training set of n samples and a test set of x samples.
     * A `random_forest` model was initialised and trained successfully.
     * The model achieved a very high **Accuracy of 0.9782** on the test set.
 * **Classification report:**
-    * The `UserWarning: labels size, 4, does not match size of target_names, 8` is expected and indicates that your current *test split* happened to only contain 4 of your 8 drum classes. This is common with random splits, especially if some classes have fewer samples.
-    * Despite this, the report successfully shows detailed metrics (*precision*, *recall*, **f1-score**, and *support*) for the 4 classes present in your test set (ie.'bass_drum', 'closed_hi_hat', 'crash', and 'dbl_bass_drum'). The high scores for these categories confirm the model is performing well on the data it was tested against.
+    * The `UserWarning: labels size, 4, does not match size of target_names, 8` is expected and indicates that the current *test split* happened to only contain 4 of the 8 drum classes. This is common with random splits, especially if some classes have fewer samples.
+    * Despite this, the report successfully shows detailed metrics (*precision*, *recall*, **f1-score**, and *support*) for the 4 classes present in the test set (ie.'bass_drum', 'closed_hi_hat', 'crash', and 'dbl_bass_drum'). The high scores for these categories confirm the model is performing well on the data it was tested against.
 * **Model assets saved:**
-    * Your trained model (`drum_classifier_model.joblib`), the scaler (`scaler.joblib`), and the label map (`label_map.json`) have all been successfully saved into your `models/` directory. These files are essential for using your model to classify new drum sounds in the future.
+    * the trained model (`drum_classifier_model.joblib`), the scaler (`scaler.joblib`), and the label map (`label_map.json`) have all been successfully saved into the `models/` directory. These files are essential for using the model to classify new drum sounds in the future.
 >-->
    You should now have a **trained model** for use! :) 
 
 > **Please note:** The model **currently being used/tested** is a **`RandomClassifier` model**. This may change as package development progresses.
+
+##### `drum_model.py`
+
+```
+python3 drum_classifier/drum_model.py
+```
+
+...or, to run `drum_model.py` as a **module**:
+
+```
+python3 -m drum_classifier.drum_model
+```
+
+**expected output:**
+
+```
+DrumScript % python3 -m drum_classifier.drum_model
+Running drum_model.py example...
+Initialized DrumClassifier with model type: random_forest
+Training random_forest model...
+Model training complete.
+Random Forest predictions for first 2 samples: [0 1]
+Initialized DrumClassifier with model type: svm
+Training svm model...
+Model training complete.
+SVM predictions for first 2 samples: [0 1]
+Initialized DrumClassifier with model type: mlp
+Training mlp model...
+
+~DrumScript/.venv/lib/python3.12/site-packages/sklearn/neural_network/_multilayer_perceptron.py:780: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (200) reached and the optimization hasn't converged yet.
+  warnings.warn(
+    
+Model training complete.
+MLP predictions for first 2 samples: [0 1]
+Model saved to: temp_models/test_model.joblib
+Initialized DrumClassifier with model type: random_forest
+Model loaded from: temp_models/test_model.joblib
+Model save/load successful!
+Cleaned up temp_models
+drum_model.py example finished.
+```
+
+
+**Important note:**
+
+The `drum_model.py` script fundamentally defines the `DrumClassifier` class. This class is like a blueprint for the machine learning model. It contains:
+
+* The **initialisation logic** for **different types of classifiers** (like `RandomForestClassifier`, `SVC`, `MLPClassifier`).
+* Methods **for training the model** (`train`).
+* Methods for **making predictions** (`predict`, `predict_proba`).
+* Functions to **save and load the trained model**(`save_model`, `load_model`).
+
+Essentially, `drum_model.py` provides the **structure and functionality for the drum classification model** itself.
+
+The `if __name__ == "__main__":` block at the bottom of `drum_model.py` is just a small example or test area for the class's functionalities when that specific file is run directly. As its comments state, `drum_model.py` is currently a *minimal example* and n**ot intended for classifying real audio or running the full application**.
+
+So, to reiterate:
+* `drum_model.py` **defines the `DrumClassifier` class**.
+* It is **not meant to be run directly** for the purpose of classifying an entire audio file into sheet music.
+* Instead, its `DrumClassifier` class is **imported and used by other scripts** that handle the **end-to-end process**.
+
+> To perform **actual drum classification** on an audio file:
+* Usr the `predict.py` script, which imports `DrumClassifier` and uses it to **classify an input audio file**.
+* Or, **to run the full pipeline (audio to sheet music PDF)**, you would use the `main.py` script you just shared, which also imports and utilises the `DrumClassifier` (among other components).
+
+> **`predict.py` or `main.py` are the scripts you'll need to execute** to see the **drum classifier in action** with **real audio**.
+
 
 ---
 <!--END-->

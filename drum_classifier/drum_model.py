@@ -27,7 +27,9 @@ class DrumClassifier:
         elif model_type == 'svm':
             self.model = SVC(probability=True, random_state=42, **kwargs)
         elif model_type == 'mlp':
-            self.model = MLPClassifier(random_state=42, max_iter=500, **kwargs)
+            #self.model = MLPClassifier(random_state=42, max_iter=500, **kwargs)
+            self.model = MLPClassifier(random_state=42, **kwargs) # Removed max_iter=500 here due to conflict with line 130: Python sees both max_iter=500 and max_iter=200 being passed to the MLPClassifier constructor simultaneously, which causes the TypeError.
+            
         else:
             raise ValueError(f"Unsupported model_type: {model_type}. Choose from 'random_forest', 'svm', 'mlp'.")
 
