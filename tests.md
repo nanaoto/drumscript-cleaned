@@ -164,76 +164,53 @@ DrumScript %  -
 #####  `data_preparer.py`
 
 ```
-python3 drum_classifier/data_preparer.py
+python3 drum_classifier/model_trainer.py
 ```
-
 
 ...or, to run `data_preparer.py` as a **module**:
 
 ```
-python3 -m drum_classifier.data_preparer
+python3 -m drum_classifier.model_trainer
 ```
 
 **expected output:**
 
 ```
-(DrumScript) DrumScript % python3 -m drum_classifier.data_preparer          
-Attempting to prepare data from: ~/training_data
-Preparing dataset from: ~/training_data
-Processing 'hihat' sounds...
-Processing 'kick' sounds...
-Processing 'snare' sounds...
+(DrumScript) DrumScript % python3 -m drum_classifier.data.preparer.py
+Preparing dataset from: DrumScript/training_data
+  Processing 'bass_drum' sounds...
+  Processing 'closed_hi_hat' sounds..
 
 Finished data preparation.
-Total samples: 9
-Feature dimension: 216
-Labels processed: {'hihat': 0, 'kick': 1, 'snare': 2}
+Total samples: 2519
+Feature dimension: 24
+Labels processed: {'bass_drum': 0, 'closed_hi_hat': 1, 'crash': 2, 'dbl_bass_drum': 3, 'kick': 4, 'open_hi_hat': 5, 'ride': 6, 'snare': 7}
 Features scaled using StandardScaler.
 
 Data preparation successful!
-Feature matrix shape (X): (9, 216)
-Labels vector shape (y): (9,)
-Label mapping: {'hihat': 0, 'kick': 1, 'snare': 2}
-Scaler saved to: ~/models/scaler.joblib
-Label map saved to: ~/models/label_map.json
+Feature matrix shape (X): (2519, 24)
+Labels vector shape (y): (2519,)
+Label mapping: {'bass_drum': 0, 'closed_hi_hat': 1, 'crash': 2, 'dbl_bass_drum': 3, 'kick': 4, 'open_hi_hat': 5, 'ride': 6, 'snare': 7}
+Scaler saved to: ~~DrumScript/models/scaler.joblib
+Label map saved to: ~DrumScript/models/label_map.json
 ```
 
-#####  `data_preparer.py`
+> **NOTE:** 
+> 
+> While running `data_preparer.py` you may currently get an error (or errors) like this:
+> ```
+> DrumScript/.venv/lib/python3.12/site-packages/librosa/core/spectrum.> py:266: UserWarning: n_fft=2048 is too large for input signal of length=1274
+> ```
+> This warning message tells you the following:
+> * **`n_fft=2048`**: This is the **`Fast Fourier Transform (FFT)` window size** that `librosa` is trying to use for its frequency analysis. It means `librosa` is trying to analyse a segment of sound that is 2048 samples long.
+> * **`input signal of length=1274`**: This indicates that the specific  >  audio segment `librosa` received for processing *at that moment* was only **1274 samples long**, ie. the labelled audio sample was *too short*
+> * **`n_fft is too large for input signal`**: This is the core of the warning. It means the window size (`n_fft`) chosen for the frequency > analysis is larger than the actual piece of sound it's trying to analyze (the `input signal of length`).
+> 
+> **Solution:** 
+> 
+>Re-run `feature_extractor.py` with **a smaller value** for `n_fft`
 
-```
-python3 drum_classifier/data_preparer.py
-```
-
-
-...or, to run `data_preparer.py` as a **module**:
-
-```
-python3 -m drum_classifier.data_preparer
-```
-
-**expected output:**
-
-```
-(DrumScript) DrumScript % python3 -m drum_classifier.data_preparer          
-Attempting to prepare data from: ~/training_data
-Preparing dataset from: ~/training_data
-Processing 'hihat' sounds...
-Processing 'kick' sounds...
-Processing 'snare' sounds...
-
-Finished data preparation.
-Total samples: 9
-Feature dimension: 216
-Labels processed: {'hihat': 0, 'kick': 1, 'snare': 2}
-Features scaled using StandardScaler.
-
-Data preparation successful!
-Feature matrix shape (X): (9, 216)
-Labels vector shape (y): (9,)
-Label mapping: {'hihat': 0, 'kick': 1, 'snare': 2}
-Scaler saved to: ~/models/scaler.joblib
-Label map saved to: ~/models/label_map.json
-```
+<!--In simple terms, your `feature_extractor.py` (which uses `librosa`) is trying to put a *listening window* of 2048 samples over a sound clip that is only 1274 samples long. While `librosa` will still try to perform the calculation (often by padding the shorter signal with zeros), this warning signals that the chosen `n_fft` might be too large for some of the very short drum hits or segments your `onset_detector` is extracting, potentially leading to less ideal feature extraction for those specific short sounds.--->
 
 Once you run `data_preparer.py`, you will have a new folder in the root called `models` and, in that folder, two files: 
  - `/label_map.json`:
@@ -242,7 +219,40 @@ Once you run `data_preparer.py`, you will have a new folder in the root called `
   ```json
   {"bass_drum": 0, "closed_hi_hat": 1, "crash": 2, "dbl_bass_drum": 3, "kick": 4, "open_hi_hat": 5, "ride": 6, "snare": 7}
   ```
-- `/scaler.joblib` file.
+  `label_map.json`  stores a **mapping between the human-readable drum labels** (like *snare*, *kick*, *closed_hi_hat*) and the **integer (*numerical*) representations** that a machine learning model can understand.
+
+- `/scaler.joblib`:
+>
+   `scaler.joblib` stores the **parameters (*mean* and *standard deviation (s.d)*) of the `StandardScaler`** that was used to **normalise your features during data preparation**.
+
+
+> **IMPORTANT NOTE:**
+>
+>It is absolutely critical that any new audio data you feed into your trained `drum_model.py` for prediction is scaled using the **exact same scaling parameters** as the `Data the model was trained on`. 
+>
+>`drum_model.py` will load this `scaler.joblib` file to apply the identical scaling transformation to new drum sound features, ensuring the model receives data in the expected range. 
+>
+>Without **consistent scaling, the model's predictions would be inaccurate**.
+>
+#####  `model_trainer.py`
+
+```
+python3 drum_classifier/model_trainer.py
+```
+
+
+...or, to run `model_trainer.py` as a **module**:
+
+```
+python3 -m drum_classifier.model_trainer
+```
+
+**expected output:**
+
+```
+
+```
+
 
 ---
 <!--END-->
