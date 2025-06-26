@@ -54,7 +54,8 @@ def train_and_evaluate_model(data_dir: str, model_save_path: str, scaler_save_pa
     id_to_label = {v: k for k, v in label_map.items()}
     target_names = [id_to_label[i] for i in sorted(id_to_label.keys())]
     print("\nClassification Report:")
-    print(classification_report(y_test, y_pred, target_names=target_names))
+    #print(classification_report(y_test, y_pred, target_names=target_names)) # this line generating an error 'ValueError: Number of classes, 4, does not match size of target_names, 8. Try specifying the labels parameter, occurs specifically when generating the classification_report.' fix:
+    print(classification_report(y_test, y_pred, target_names=target_names, labels=np.unique(y_test))) #by adding labels=np.unique(y_test), it ensure that the report only tries to display metrics for the classes that are actually present in y_test set. 
 
     # 4. Save Model, Scaler, and Label Map
     print("\nSaving model assets...")
