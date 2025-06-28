@@ -9,16 +9,19 @@ __pycache__/
 venv/
 env/
 
+# adhoc dev files used during build
 .archive
 development/*
 development/
+tests/*
+tests/
+local_tests/*
+local_tests/
+dev_notes.txt
 
 # OS generated files
 .DS_Store
 .env
-
-tests/*
-tests/
 .python-version
 .development
 
