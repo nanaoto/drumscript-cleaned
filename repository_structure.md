@@ -192,17 +192,15 @@ Helper functions and configuration.
 
 1.  **Orchestrating the full pipeline:** 
 It brings together all the individual components of  `DrumScript`:
+
+    - **Audio loading:** It loads the input drum audio file.
+    - **Onset detection:** It detects when drum hits occur in the audio.
+    - **Drum classification:** It loads previously trained drum classification model (from `drum_classifier.drum_model` and `model_trainer`), extracts features from the detected drum hits, and then classifies each hit (e.g., as a kick, snare, hi-hat).
+    - **Notation generation:** It takes the classified drum events, quantizes them (ie. aligns them to a musical grid), and structures them into data suitable for sheet music.
+    - **PDF generation:** Finally, it generates a PDF file of the drum sheet music.
+    - **User Interface via Command Line:** It uses `argparse` to allow users **to specify the input audio file**, **the desired output PDF file path**, and (optionally) **the tempo**, directly from the **command line**.
 >
-    * **Audio loading:** It loads the input drum audio file.
-    * **Onset detection:** It detects when drum hits occur in the audio.
-    * **Drum classification:** It loads previously trained drum classification model (from `drum_classifier.drum_model` and `model_trainer`), extracts features from the detected drum hits, and then classifies each hit (e.g., as a kick, snare, hi-hat).
-    * **Notation generation:** It takes the classified drum events, quantizes them (ie. aligns them to a musical grid), and structures them into data suitable for sheet music.
-    * **PDF generation:** Finally, it generates a PDF file of the drum sheet music.
->
-1.  **User Interface via Command Line:** 
-   It uses `argparse` to allow users **to specify the input audio file**, **the desired output PDF file path**, and (optionally) **the tempo**, directly from the **command line**.
->
-**This makes it easy for someone to run the entire conversion process with a single command.**
+In short, `main.py` **makes it easy** for someone to **run the entire conversion process** with a **single command**.
 
 > `main.py` is the script  would run when you **want to convert a complete drum audio recording** into a drum **sheet music PD**F, utilising all the preceding steps (like data preparation and model training). It's the final piece that connects everything together for the end-user functionality.
 
