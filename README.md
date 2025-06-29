@@ -1,18 +1,15 @@
-## DrumScript
+## **DrumScript**
 
 <!--date_created: sun-15-june-2025-->
-<!--date_updated: weds-25-june-2025-->
+<!--date_updated: sun-29-june-2025-->
 
-###### Python 3.12.10
+> **Python 3.12.10**
 
-`DrumScript` is a `Python package` that **converts drum audio recordings into sheet music (drum notation) in PDF format**. 
+`DrumScript` is a `Python package` that converts **drum audio** into **sheet music (drum notation)** in PDF format. 
 
 It leverages **advanced audio signal processing** and **machine learning** to detect individual drum hits (kick, snare, hi-hat, etc.) and translate them into a musical score.
 
-**[Package Structure](repository_structure.md)**
-
-<!-- **NOTE:** This package requires `Python 3.12+`-BLOT-OUT-FOR-NOW-AS-MIGHT-CHANGE-->
-
+### **[Package Structure](repository_structure.md)**
 
  - **[Features](#features-1)**
  - **[Installation](#installation)**
@@ -63,6 +60,30 @@ It leverages **advanced audio signal processing** and **machine learning** to de
 
 > **NOTE:** 
 > Other `Python` package managers, ie `pip`, `conda`, `pyenv`, `hatch`, `poetry` may be used interchangeably with the commands above.
+>
+> **LilyPond Installation**
+
+To generate high-quality PDF sheet music, DrumScript utilizes `music21` which, in turn, relies on an external music engraving program called **LilyPond**. You'll need to install LilyPond separately on your system for PDF export functionality to work.
+
+  * **Download & Install LilyPond:**
+
+      * Visit the official LilyPond website: [https://lilypond.org/](https://lilypond.org/) and download the appropriate version for your operating system.
+      * **macOS Users:** LilyPond can be easily installed via [Homebrew](https://brew.sh/) by running:
+        ```bash
+        brew install lilypond
+        ```
+
+  * **Verify Installation:**
+    You can verify LilyPond is correctly installed and accessible by opening your terminal/command prompt and typing:
+
+    ```bash
+    lilypond --version
+    ```
+
+    This should display the installed LilyPond version information.
+
+`music21` will automatically try to locate your LilyPond installation. If you encounter errors during PDF generation, you might need to manually configure the LilyPond path within `music21` (refer to the `DrumScript/notation_generator/pdf_exporter.py` file for guidance on this).
+
 ---
 ### Dependencies
 >
@@ -70,13 +91,15 @@ A list of dependencies can be found in the **[requirements](requirements.txt)** 
 
 
 ---
-### Important note for `.mp3` users
+> **Important note for `.mp3` users**
 
 **See also **[FAQs](#faqs)****
 
 In order to use `.mp3` files, users must **first install** [`FFmpeg`](), a free command-line tool downloaded via [`Homebrew`](https://brew.sh/) designed for processing video and audio files. 
 
-#### How to install [`FFmpeg`](https://ffmpeg.org/download.html) via `DrumScript`
+##### Installing [`FFmpeg`](https://ffmpeg.org/download.html)
+
+**How to install [`FFmpeg`](https://ffmpeg.org/download.html) via `DrumScript`**
 
 ```python
 
@@ -93,25 +116,20 @@ drumscript.install_ffmpeg()
 # Now proceed with loading audio, etc.
 # audio_data, sr = drumscript.audio_processor.audio_loader.load_audio("your_drum_track.mp3")
 ```
-
-#### How to install `FFmpeg` manually
+**How to install `FFmpeg` manually**
 - **macOS (using [Homebrew](https://brew.sh/))**
 
 ```Bash
 brew install ffmpeg
 ```
-
  - **Linux (using apt for Debian/Ubuntu)**
 
 ``` Bash
 sudo apt update
 sudo apt install ffmpeg
 ```
-
  - **Windows:**
   > This is a bit more involved. You typically download the `FFmpeg` binaries (as a `.zip` file) from the **[official website](ffmpeg.org/download.html)**, extract them, and then add the `bin` directory of the extracted `FFmmpeg` folder to your system's `PATH` environment variable. There are many tutorials online for this specific step on Windows.
-
-
 ---
 ### Usage
 
