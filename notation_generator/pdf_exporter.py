@@ -1,135 +1,129 @@
 # DrumScript/notation_generator/pdf_exporter.py
 
 from typing import Dict, Any
-from . import config # For PDF layout settings, font, etc.
-# from reportlab.lib.pagesizes import letter # Example for ReportLab
-# from reportlab.pdfgen import canvas # Example for ReportLab
-# from reportlab.lib.units import mm # Example for ReportLab
+import os
+import music21 # Import the music21 library
+
+# Optional: You might want to import config for default settings
+# from . import config 
 
 def generate_pdf(score_data: Dict[str, Any], output_filepath: str):
     """
-    Generates a PDF document of the drum sheet music from the structured score data.
+    Generates a PDF document of the drum sheet music from the structured score data
+    using music21 and an external music engraving software (like MuseScore or LilyPond).
 
     Args:
-        score_data (Dict[str, Any]): A dictionary containing the structured score information,
-                                     e.g., tempo, time signature, and a list of formatted drum notes.
-                                     Example structure:
-                                     {
-                                         'title': 'Drum Transcription',
-                                         'tempo': int,
-                                         'time_signature': '4/4',
-                                         'parts': {
-                                             'drums': [
-                                                 {'beat_time': float, 'midi_pitch': int, 'note_head': str, 'staff_pos': float, 'duration_beats': float},
-                                                 ...
-                                             ]
-                                         }
-                                     }
+        score_data (Dict[str, Any]): A dictionary containing the structured score information.
         output_filepath (str): The full path where the PDF file should be saved.
     """
     if not score_data or not score_data.get('parts', {}).get('drums'):
         print("No score data provided or no drum events to generate PDF.")
         return
 
-    print(f"Generating PDF for '{score_data.get('title', 'Untitled')}' to {output_filepath}...")
+    print(f"Generating PDF for '{score_data.get('title', 'Untitled')}' to {output_filepath} using music21...")
 
-    # --- Conceptual PDF Generation Logic (requires a PDF library) ---
-    # This section is highly dependent on the PDF generation library you choose.
-    # Below is a conceptual outline if using a library like ReportLab or Music21 for rendering.
+    try:
+        # --- Music21 Environment Setup (Important for LilyPond) ---
+        # music21 tries to auto-locate LilyPond. If it can't find it,
+        # you might need to manually specify the path to your LilyPond executable.
+        # Uncomment and adjust the line below if you get errors like "Couldn't find LilyPond"
+        # after running the script.
+        #
+        # Example for macOS (adjust path based on where you installed LilyPond):
+        # music21.environment.UserSettings()['lilypondPath'] = '/Applications/LilyPond.app/Contents/Resources/bin/lilypond'
+        #
+        # You can set this once in a Python console, or include it in your script.
+        # Setting it once is generally preferred if you don't want to hardcode in every script.
+        # For temporary testing, putting it here is fine.
+        
+        # 1. Create a new music21 Score object
+        score = music21.stream.Score()
+        
+        # 2. Add metadata
+        score.metadata = music21.metadata.Metadata()
+        score.metadata.title = score_data.get('title', 'Drum Transcription')
+        score.metadata.composer = score_data.get('composer', 'AI Generated')
 
-    # Example using a hypothetical Music Notation Library (e.g., Music21)
-    # import music21
-    # score = music21.stream.Score()
-    # part = music21.stream.Part()
-    # score.append(part)
+        # 3. Create a percussion part
+        part = music21.stream.Part()
+        part.id = 'Drums'
+        part.instrument = music21.instrument.Percussion()
+        score.append(part)
 
-    # # Add tempo and time signature
-    # score.insert(0, music21.tempo.MetronomeMark(number=score_data['tempo']))
-    # score.insert(0, music21.meter.TimeSignature(score_data['time_signature']))
+        # 4. Add initial musical context (tempo, time signature)
+        score.insert(0, music21.tempo.MetronomeMark(number=score_data['tempo']))
+        numerator_str, denominator_str = score_data['time_signature'].split('/')
+        score.insert(0, music21.meter.TimeSignature(f"{numerator_str}/{denominator_str}"))
 
-    # current_measure_num = 1
-    # current_measure = music21.stream.Measure(number=current_measure_num)
-    # part.append(current_measure)
+        # 5. Populate measures with notes
+        current_measure_number = 1
+        current_measure_start_beat = 0.0
+        beats_per_measure = float(numerator_str) # Assuming quarter note is the beat unit
+        
+        # Start the first measure
+        current_measure = music21.stream.Measure(number=current_measure_number)
+        part.append(current_measure)
 
-    # for note_data in score_data['parts']['drums']:
-    #     # Convert beat_time to quarterLength for music21
-    #     # (assuming quarter note = 1 beat)
-    #     ql = note_data['duration_beats']
-    #     midi_note = music21.pitch.Pitch(midi=note_data['midi_pitch'])
-    #     
-    #     # Create a music21 note object
-    #     # For percussion, you might use music21.percussion.UnpitchedPercussion or specific drum objects
-    #     note = music21.note.Note(midi_note, quarterLength=ql)
-    #     # Set notehead type (e.g., 'x' for cymbals, 'normal' for snare/kick)
-    #     if note_data['note_head_type'] == 'x':
-    #         note.notehead = 'x'
-    #     
-    #     # Add note to the current measure or new measure if needed
-    #     # This logic needs to handle measure boundaries and rests.
-    #     # For simplicity, just append to a list for now
-    #     current_measure.append(note) # This needs proper positioning by beat in measure
+        # Sort events by time to ensure chronological order
+        sorted_events = sorted(score_data['parts']['drums'], key=lambda x: x['time_beats'])
 
-    # # You would then write the score to a MusicXML file, and then convert MusicXML to PDF
-    # # using a tool like LilyPond or MuseScore's command-line interface.
-    # # This is outside the scope of direct Python PDF generation.
-    # score.write('musicxml', fp='temp_score.xml')
-    # # Then you'd call an external tool, e.g.:
-    # # import subprocess
-    # # subprocess.run(['musescore', '-o', output_filepath, 'temp_score.xml'])
-    # # OR
-    # # subprocess.run(['lilypond', 'temp_score.ly']) # if using lilypond
+        for event_idx, note_data in enumerate(sorted_events):
+            beat_time = note_data['time_beats']
+            midi_pitch = note_data['midi_pitch']
+            note_head_type = note_data['note_head_type']
+            duration_beats = note_data['duration_beats'] # This is the quantized duration from score_builder
 
-    # Example using a direct PDF drawing library (e.g., ReportLab)
-    # c = canvas.Canvas(output_filepath, pagesize=config.PDF_PAGE_SIZE)
-    # width, height = config.PDF_PAGE_SIZE # e.g., letter
-    
-    # # Set margins
-    # c.translate(config.PDF_MARGIN_LEFT, height - config.PDF_MARGIN_TOP)
-    
-    # c.setFont(config.PDF_FONT, config.PDF_FONT_SIZE_TITLE)
-    # c.drawString(0, 0, score_data.get('title', 'Drum Transcription'))
-    
-    # y_pos = -config.PDF_FONT_SIZE_TITLE * 1.5 # Move down after title
-    
-    # c.setFont(config.PDF_FONT, config.PDF_FONT_SIZE_BODY)
-    # c.drawString(0, y_pos, f"Tempo: {score_data['tempo']} BPM")
-    # y_pos -= config.PDF_FONT_SIZE_BODY * 1.5
-    # c.drawString(0, y_pos, f"Time Signature: {score_data['time_signature']}")
-    # y_pos -= config.PDF_FONT_SIZE_BODY * 2
+            # Calculate offset within the current measure
+            offset_in_current_measure = beat_time - current_measure_start_beat
 
-    # # --- Draw Staff Lines (conceptual) ---
-    # # This is highly simplified for a 5-line staff.
-    # staff_bottom_y = y_pos - (2 * config.STAFF_LINE_SPACING)
-    # for i in range(5):
-    #     line_y = staff_bottom_y + (i * config.STAFF_LINE_SPACING)
-    #     c.line(0, line_y, width - config.PDF_MARGIN_LEFT - config.PDF_MARGIN_RIGHT, line_y)
-    # # --- End Draw Staff Lines ---
+            # Check if the note belongs in the current measure or if a new measure is needed
+            # This is a simplified approach; music21's `makeMeasures` can automate much of this.
+            if offset_in_current_measure >= beats_per_measure:
+                # Fill the rest of the current measure with rests if needed
+                current_measure.fillEmptyMeasures(inPlace=True)
+                
+                # Start a new measure
+                current_measure_number += 1
+                current_measure_start_beat = (current_measure_number - 1) * beats_per_measure
+                current_measure = music21.stream.Measure(number=current_measure_number)
+                part.append(current_measure)
+                offset_in_current_measure = beat_time - current_measure_start_beat
+            
+            # Create a music21 note object
+            n = music21.note.Note()
+            n.pitch = music21.pitch.Pitch(midi=midi_pitch)
+            n.quarterLength = duration_beats # Use the determined beat duration
 
-    # # --- Draw Notes (conceptual) ---
-    # # This loop needs complex logic to position notes correctly, handle measures,
-    # # stems, beams, rests, etc.
-    # for note_data in score_data['parts']['drums']:
-    #     # Convert beat_time to X position on page
-    #     x_pos = note_data['beat_in_measure'] * (width / score_data['time_signature_numerator']) # Very rough
-    #     
-    #     # Convert staff_position to Y position on page relative to staff
-    #     # This requires a mapping from conceptual staff_pos to pixel Y_pos
-    #     y_pos_note = staff_bottom_y + (note_data['staff_position'] * (config.STAFF_LINE_SPACING / 2))
-    #     
-    #     # Draw note head (simplified: just a circle or X)
-    #     if note_data['note_head_type'] == 'x':
-    #         c.setFont('ZapfDingbats', config.NOTE_HEAD_SIZE * 1.5) # Example for X symbol
-    #         c.drawString(x_pos, y_pos_note, 'x')
-    #     else:
-    #         c.circle(x_pos, y_pos_note, config.NOTE_HEAD_SIZE / 2, fill=1)
-    #     
-    #     # Draw stem (conceptual)
-    #     # ...
-    #     # Draw flag/beam (conceptual)
-    #     # ...
+            # Set notehead style for percussion (e.g., 'x' for cymbals/hi-hat)
+            if note_head_type == 'x':
+                n.notehead = music21.note.Notehead('x')
+            
+            # Add to the current measure at the correct offset
+            current_measure.insert(offset_in_current_measure, n)
 
-    # c.save() # Save the PDF
-    # --- End Conceptual PDF Generation Logic ---
-    
-    print(f"PDF generation to {output_filepath} conceptually complete. "
-          "Note: Actual implementation requires a dedicated music notation or PDF drawing library.")
+        # Fill any remaining empty space in the last measure with rests
+        current_measure.fillEmptyMeasures(inPlace=True)
+
+        # 6. Export to PDF
+        # Ensure the output directory exists
+        output_dir = os.path.dirname(output_filepath)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        # The 'write' method will try to find LilyPond and convert MusicXML to PDF.
+        score.write('pdf', fp=output_filepath)
+        
+        print(f"Successfully generated PDF to {output_filepath}")
+
+    except music21.converter.ConverterException as e:
+        print(f"Error during music21 conversion/PDF generation. "
+              f"This often means LilyPond (or MuseScore) is not installed or music21 can't find it. Error: {e}")
+        print("Please ensure LilyPond is installed and its executable is in your system's PATH.")
+        print("Alternatively, you might need to manually configure music21's environment path. For example, in a Python console (once):")
+        print(f">>> import music21")
+        print(f">>> music21.environment.UserSettings()['lilypondPath'] = '/Applications/LilyPond.app/Contents/Resources/bin/lilypond' # Adjust this path to your LilyPond executable")
+        print(f">>> music21.environment.UserSettings().write() # Save the setting")
+    except Exception as e:
+        print(f"An unexpected error occurred during PDF generation: {e}")
+        import traceback
+        traceback.print_exc()
