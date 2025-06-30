@@ -56,4 +56,8 @@ training_data/
 # Logs and output
 *.log
 .ipynb_checkpoints/ # Jupyter notebooks
+
+# temp files
+audio_processor/__pycache__/feature_extractor.cpython-312.pyc
 logs.txt
+audio_processor/__pycache__/feature_extractor.cpython-312.pyc
