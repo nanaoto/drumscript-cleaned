@@ -111,7 +111,7 @@ def prepare_dataset(data_dir: str, sr: int = 22050, segment_length_seconds: floa
     print(f"Feature dimension: {X.shape[1]}")
     print(f"Labels processed: {label_map}")
 
-    # Standardize features (important for many ML models)
+    # Standardise features (important for many ML models)
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     print("Features scaled using StandardScaler.")
