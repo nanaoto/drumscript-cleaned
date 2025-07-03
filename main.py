@@ -10,7 +10,8 @@ from audio_processor.audio_loader import load_audio
 from audio_processor.onset_detector import detect_onsets
 from audio_processor.feature_extractor import extract_features
 from drum_classifier.drum_model import DrumClassifier # Already correct
-from notation_generator.score_builder import quantize_events, create_score_data # map_to_drum_parts might not be needed
+# from notation_generator.score_builder import quantize_events, create_score_data # map_to_drum_parts might not be needed
+from notation_generator.score_builder import quantize_events, map_to_drum_parts, create_score_data
 from notation_generator.pdf_exporter import generate_pdf
 from utils.config import get_config # This imports get_config from utils/config.py
 
@@ -93,10 +94,18 @@ def run_drumscript(audio_filepath, output_pdf_path, tempo=None):
     # If tempo is not provided, use the default from config
     # You might want more sophisticated tempo detection here later
     final_tempo = tempo if tempo else config['notation']['default_tempo']
+    """    quantized_events = quantize_events(classified_events, tempo=final_tempo, subdivision=config['notation']['subdivision'])
+        
+        # map_to_drum_parts is likely called within create_score_data, or directly if needed
+        score_data = create_score_data(quantized_events)"""
+
     quantized_events = quantize_events(classified_events, tempo=final_tempo, subdivision=config['notation']['subdivision'])
-    
-    # map_to_drum_parts is likely called within create_score_data, or directly if needed
-    score_data = create_score_data(quantized_events)
+
+    # Map quantized events to drum parts with notation-specific properties
+    quantized_and_mapped_events = map_to_drum_parts(quantized_events)
+
+    # Now pass the correctly mapped events to create_score_data
+    score_data = create_score_data(quantized_and_mapped_events)
 
     print(f"Generating PDF sheet music to {output_pdf_path}...")
     generate_pdf(score_data, output_pdf_path)

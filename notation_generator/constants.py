@@ -1,5 +1,15 @@
 # DrumScript/notation_generator/constants.py
 
+# Drum part mapping (should align with your model's classification)
+DRUM_NOTATION_MAP = { 
+    'kick': {'note_head': 'x', 'staff_position': 'F2'},
+    'snare': {'note_head': 'normal', 'staff_position': 'C3'},
+    'hi-hat': {'note_head': 'x', 'staff_position': 'G3'},
+    'crash': {'note_head': 'x', 'staff_position': 'C4'},
+    'ride': {'note_head': 'x', 'staff_position': 'A3'},
+    # Add more drum types as classified by your model
+}
+
 # --- Musical Durations ---
 # Common note durations as fractions of a whole note (1.0)
 WHOLE_NOTE = 1.0

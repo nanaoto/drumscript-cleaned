@@ -1,5 +1,5 @@
 # DrumScript/utils/config.py (Updated for full application configuration)
-
+from notation_generator import constants
 # Audio Processing Settings
 AUDIO_SAMPLE_RATE = 22050
 AUDIO_SEGMENT_LENGTH_SECONDS = 0.2
@@ -27,7 +27,7 @@ STAFF_LINE_SPACING = 10
 NOTE_HEAD_SIZE = 8
 
 # Drum part mapping (should align with your model's classification)
-DRUM_NOTATION_MAP = {
+"""DRUM_NOTATION_MAP = { # removing for now while testing
     'kick': {'note_head': 'x', 'staff_position': 'F2'},
     'snare': {'note_head': 'normal', 'staff_position': 'C3'},
     'hi-hat': {'note_head': 'x', 'staff_position': 'G3'},
@@ -35,7 +35,7 @@ DRUM_NOTATION_MAP = {
     'ride': {'note_head': 'x', 'staff_position': 'A3'},
     # Add more drum types as classified by your model
 }
-
+"""
 def get_config():
     """
     Returns a comprehensive dictionary of all application-wide configuration settings.
@@ -64,6 +64,7 @@ def get_config():
             },
             'staff_line_spacing': STAFF_LINE_SPACING,
             'note_head_size': NOTE_HEAD_SIZE,
-            'drum_notation_map': DRUM_NOTATION_MAP,
+            #'drum_notation_map': DRUM_NOTATION_MAP,
+            'drum_notation_map': constants.DRUM_NOTATION_MAP
         }
     }
