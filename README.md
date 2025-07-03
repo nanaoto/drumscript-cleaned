@@ -24,7 +24,9 @@ It leverages **advanced audio signal processing** and **machine learning** to de
  - **[Contact](#contact)**
  - **[FAQs](#faqs)**
 
-> See **[how_it_works.md](how_it_works.md)** if you are interested in the link between **music theory** and `DrumScript` structure. 
+> **NOTE:** See **[how_it_works.md](how_it_works.md)** if you are interested in the link between **music theory** and `DrumScript` structure. 
+
+> **NOTE:**  For simplicity, `DrumScript` uses the generic spelling of the word ***quantize***, rather than British English spelling ***quantise***. 
 
 ---
 
