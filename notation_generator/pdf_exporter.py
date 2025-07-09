@@ -55,38 +55,44 @@ def generate_pdf(score_data: Dict[str, Any], output_filepath: str):
         part.append(metronome)
 
         sorted_events = sorted(score_data['parts']['drums'], key=lambda x: x['time_beats'])
-# 3. Add notes to the part
+    # 3. Add notes to the part
         for event_idx, note_data in enumerate(sorted_events):
-            beat_time = note_data['time_beats'] 
+            beat_time = note_data['time_beats']
             midi_pitch = note_data['midi_pitch']
             drum_type = note_data['drum_type'] # Get the drum type (e.g., 'kick', 'snare')
             note_head_type = note_data['note_head_type']
             duration_beats = note_data['duration_beats']
 
-            n = music21.note.Note() 
+            n = music21.note.Note()
             n.pitch = music21.pitch.Pitch(midi=midi_pitch)
             n.quarterLength = duration_beats
 
-            # --- NEW CODE TO SET STAFF LINE ---
-            # These staffLine numbers are common conventions for a 5-line percussion staff:
-            # Line 1: bottom line
-            # Line 3: middle line
-            # Line 5: top line
-            if drum_type == 'kick':
-                n.pitch.staffLine = 1 # Place kick on the bottom line
-            elif drum_type == 'snare':
-                n.pitch.staffLine = 3 # Place snare on the middle line
-            # You can add more mappings here if you classify other drums (e.g., hi-hat)
-            # For example, if you classify 'hi-hat':
-            # elif drum_type == 'hi-hat':
-            #     n.pitch.staffLine = 5 # Place hi-hat on the top line
-            #     n.notehead = 'x' # Ensure x-notehead for hi-hat if not already set
-            # --- END NEW CODE ---
+        # --- UPDATED CODE TO SET STAFF LINE FOR ALL DRUM TYPES ---
+        # These staffLine numbers are common conventions for a 5-line percussion staff:
+        # Line 1: bottom line
+        # Line 3: middle line
+        # Line 5: top line
+        # Beyond Line 5 are ledger lines above the staff.
+        if drum_type == 'kick':
+            n.pitch.staffLine = 1 # Place kick on the bottom line
+        elif drum_type == 'snare':
+            n.pitch.staffLine = 3 # Place snare on the middle line
+        elif drum_type == 'hi-hat':
+            n.pitch.staffLine = 5 # Place hi-hat on the top line
+        elif drum_type == 'crash':
+            n.pitch.staffLine = 6 # Place crash cymbal on a ledger line above staff
+        elif drum_type == 'ride':
+            n.pitch.staffLine = 7 # Place ride cymbal on a ledger line higher than crash
+        else:
+            # Fallback for any unmapped drum types to avoid them being off-stave
+            print(f"Warning: No specific staffLine mapping for drum type '{drum_type}'. Defaulting to snare position.")
+            n.pitch.staffLine = 3 # Default to snare position
 
-            if note_head_type == 'x': # This handles any explicit x-noteheads (e.g., for hi-hats)
-                n.notehead = note_head_type 
+        # This ensures x-noteheads are applied based on the note_head_type from constants.py
+        if note_head_type == 'x':
+            n.notehead = note_head_type
 
-            part.insert(beat_time, n)
+        part.insert(beat_time, n)
 
 
         # Let music21 automatically create and fill measures for the entire part
