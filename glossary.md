@@ -1,5 +1,5 @@
 <!--date_created: weds-25-june-2025-->
-<!--date_updated: thurs-03-july-2025-->
+<!--date_updated: thurs-10-july-2025-->
 
 # **`DrumScript`: Glossary of Terms**
 
@@ -29,28 +29,22 @@
 
   In `DrumScript`, `MuseScore` is crucial because `music21` can be configured to use it as an **external backend for converting the generated MusicXML score data into a high-quality PDF of drum sheet music**. When LilyPond encounters issues, `MuseScore` serves as a robust and visually capable alternative for rendering the final notation.
 
-# **Variables**
-## `sample_rate` (`sr`)
-> ***Variable***
-  * **Meaning:** How many *snapshots* of the sound wave are taken per second when audio is digitised. A higher number means more detail.
->
-  * **Example:** 
-  >
-    > If **`sr = 22050 (Hz)`**, it means **`22,050`** sound measurements are recorded **every second**.
->
-  * **Example:** 
->
-    > If **`sr=22050 (Hz),`** and the **`input_signal`** of **one of your drum notes** is *`1744 milliseconds`* in length, then your **`sample_rate = ~38450 samples`**
+---
 
-## `audio_segment`
+# Definitions
+
+
+## `Area Under the Receiver Operating Characteristic Curve` (`AUC`)
 
 > ***Acoustics***
-  * **Meaning:** A specific, short clip or piece of sound extracted from a larger audio file. 
 >
-  * **Example:**
-> 
->   A **`200-millisecond`** (or, `0.2 second`)-long clip of a snare drum hit.
-
+* **Meaning:** A common performance metric used to evaluate the diagnostic ability of a binary classifier. It quantifies how well a model can distinguish between positive and negative classes. The `AUC` score ranges from 0 to 1.0. For multi-label problems (where multiple categories can be present simultaneously, like in drum classification), `AUC` is typically calculated for each individual label (e.g., 'kick', 'snare') and then averaged (e.g., macro-average, micro-average) to provide an overall assessment of the model's discriminative power across all classes.
+>
+*  **Example:**
+>   * An `AUC` of 1.0 indicates a perfect model that can perfectly distinguish between classes.
+>    * An `AUC` of 0.5 suggests the model performs no better than random guessing.
+>    * Higher `AUC` values (closer to 1.0) indicate better model performance.
+>
 ## `Discrete Fourier Transform` (`DFT`) 
    > ***Mathematics***
   * **Meaning:** The **`Discrete Fourier Transform`** (or **`DFT`**) is a mathematical operation that **converts a sequence** of individual, distinct data points from their original *domain* (like time, or space) into a *frequency domain* representation. The `DFT` helps reveal the **underlying cycles** or periodic patterns present within that (discrete) data.   In short, the **`DFT`** breaks down the **complex temperature pattern** into its **repeating components**.
@@ -72,13 +66,6 @@
   * **Example:**
   > Given a finite set of digital audio samples, the FFT quickly calculates the exact set of sine and cosine waves (each with a specific frequency and strength) that, when added together, perfectly reconstruct the original sequence of samples. This transformation is crucial for analyzing digital signals in frequency domain.-->
 
-## `n_fft`
-
-> ***Variable***
-  * **Meaning:** `n_fft` = **Number of Fast Fourier Transform** points. The size of the *listening window* (in number of samples) that is used to analyse the frequency content of an `audio_segment`.
->
-  * **Example:** 
-  > If **`n_fft= 2048`**, the analysis looks at **2048 samples** **at a time** to determine frequencies. If your `audio_segment` is **shorter than 2048 samples**, you get a warning.
 
 ## `hop_length`
 > ***Variable***
@@ -88,6 +75,27 @@
 > If `hop_length=512`, the window (or `object_event`) moves **512 samples to the right** for the next analysis, overlapping with the previous window (`object_event`).
 
   * Playing around with the `hop_length` is often crucial for finding the right split of intervals in a given audio sample. 
+
+## `n_fft`
+
+> ***Variable***
+  * **Meaning:** `n_fft` = **Number of Fast Fourier Transform** points. The size of the *listening window* (in number of samples) that is used to analyse the frequency content of an `audio_segment`.
+>
+  * **Example:** 
+  > If **`n_fft= 2048`**, the analysis looks at **2048 samples** **at a time** to determine frequencies. If your `audio_segment` is **shorter than 2048 samples**, you get a warning.
+
+
+## `sample_rate` (`sr`)
+> ***Variable***
+  * **Meaning:** How many *snapshots* of the sound wave are taken per second when audio is digitised. A higher number means more detail.
+>
+  * **Example:** 
+  >
+    > If **`sr = 22050 (Hz)`**, it means **`22,050`** sound measurements are recorded **every second**.
+>
+  * **Example:** 
+>
+    > If **`sr=22050 (Hz),`** and the **`input_signal`** of **one of your drum notes** is *`1744 milliseconds`* in length, then your **`sample_rate = ~38450 samples`**
 
 
 ---
