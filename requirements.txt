@@ -15,6 +15,6 @@ sounddevice
 pandas
 pretty-midi
 setuptools
+tensorflow
 #lilypond
 #pytorch
-#tensorflow
