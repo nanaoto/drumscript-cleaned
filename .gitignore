@@ -32,6 +32,7 @@ local_tests/*
 local_tests/
 dev_notes.txt
 test_audio/
+reference_audio/**
 
 # OS generated files
 .DS_Store
