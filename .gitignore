@@ -68,3 +68,4 @@ logs.txt
 labelled_datasets/audio_segments/
 output.pdf
 output.xml
+drum_classifier/neural_networks.md
