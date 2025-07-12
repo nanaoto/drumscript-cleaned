@@ -16,5 +16,6 @@ pandas
 pretty-midi
 setuptools
 tensorflow
+tdqm
 #lilypond
 #pytorch
