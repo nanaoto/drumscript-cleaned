@@ -6,51 +6,59 @@ import joblib
 import json
 import librosa
 import tensorflow as tf # Required to load the Keras model
+from tqdm import tqdm # For progress bar
 
 # --- Configuration (must match model_trainer.py) ---
 SAMPLE_RATE = 22050
-SEGMENT_LENGTH_SECONDS = 0.2
+SEGMENT_LENGTH_SECONDS = 0.2 # The length of segments your model was trained on
+HOP_LENGTH_SECONDS = 0.1 # How much to move forward for the next segment (creates overlap)
+
 # Define all UNIQUE drum types - MUST MATCH process_enst_dataset.py and model_trainer.py
 ALL_DRUM_TYPES = sorted(['kick', 'snare', 'hi-hat', 'crash', 'ride', 'tom']) 
 
 # --- Feature Extraction Helper (copy from model_trainer.py) ---
-def _extract_features(audio_path, sr, segment_length_seconds):
+def _extract_features(audio_segment, sr, segment_length_seconds):
     """
-    Extracts MFCC features from an audio segment.
+    Extracts MFCC features from an audio segment (numpy array).
+    Ensures the segment has the expected length, padding if necessary.
     """
     try:
-        audio, _ = librosa.load(audio_path, sr=sr, mono=True)
-        if len(audio) < int(sr * segment_length_seconds):
-            pad_length = int(sr * segment_length_seconds) - len(audio)
-            audio = np.pad(audio, (0, pad_length), mode='constant')
-        elif len(audio) > int(sr * segment_length_seconds):
-            audio = audio[:int(sr * segment_length_seconds)]
+        # Pad with zeros if the segment is shorter than expected
+        if len(audio_segment) < int(sr * segment_length_seconds):
+            pad_length = int(sr * segment_length_seconds) - len(audio_segment)
+            audio_segment = np.pad(audio_segment, (0, pad_length), mode='constant')
+        elif len(audio_segment) > int(sr * segment_length_seconds):
+            # Trim if the segment is longer (shouldn't happen with proper slicing)
+            audio_segment = audio_segment[:int(sr * segment_length_seconds)]
 
-        mfccs = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=40)
+        mfccs = librosa.feature.mfcc(y=audio_segment, sr=sr, n_mfcc=40)
         mfccs = mfccs.T # Transpose to (time_frames, n_mfccs)
         return mfccs
     except Exception as e:
-        print(f"Error extracting features from {audio_path}: {e}")
+        # print(f"Error extracting features from segment: {e}") # Uncomment for verbose debugging
         return None
 
-# --- Prediction Function ---
-def predict_drum_type(audio_path: str, model, scaler, label_map):
+# --- Prediction Function (modified to take audio array) ---
+def predict_drum_type_from_array(audio_array: np.ndarray, model, scaler, label_map):
     """
-    Predicts multi-label drum types for a single audio segment.
+    Predicts multi-label drum types for a single audio segment (numpy array).
     """
     # 1. Extract features
-    features = _extract_features(audio_path, SAMPLE_RATE, SEGMENT_LENGTH_SECONDS)
+    features = _extract_features(audio_array, SAMPLE_RATE, SEGMENT_LENGTH_SECONDS)
     
     if features is None:
-        return "Feature extraction failed."
+        return [] # Return empty list if feature extraction failed
 
     # Ensure features have the correct shape (num_time_steps, num_mfccs)
     # The model expects a batch dimension: (1, num_time_steps, num_mfccs)
-    if features.shape != (int(SEGMENT_LENGTH_SECONDS * SAMPLE_RATE / 512) + 1, 40):
-        print(f"Warning: Expected feature shape (9, 40) but got {features.shape}. Model prediction might be inaccurate.")
-        # You might need to resize or pad 'features' if its shape is inconsistent
-        # For now, let's assume it's correct or will lead to an error.
-        
+    # The time_steps calculation must match model_trainer's _extract_features
+    expected_time_steps = int(SEGMENT_LENGTH_SECONDS * SAMPLE_RATE / 512) + 1
+    if features.shape != (expected_time_steps, 40):
+        # This could happen if the final segment is too short, even after padding.
+        # For simplicity, we'll skip it if the shape is fundamentally wrong.
+        # A more robust solution might involve further padding/resampling.
+        return []
+
     # Reshape for scaler (flatten time_steps * n_mfcc)
     original_shape = features.shape
     features_reshaped_for_scaler = features.reshape(1, -1) # Reshape to (1, total_features)
@@ -62,7 +70,7 @@ def predict_drum_type(audio_path: str, model, scaler, label_map):
     scaled_features_for_cnn = scaled_features.reshape(1, original_shape[0], original_shape[1])
 
     # 2. Make prediction
-    predictions = model.predict(scaled_features_for_cnn)
+    predictions = model.predict(scaled_features_for_cnn, verbose=0) # verbose=0 to suppress Keras output for each segment
     
     # 3. Interpret prediction (multi-label)
     # Apply a threshold (e.g., 0.5) to get binary predictions for each drum type
@@ -74,9 +82,46 @@ def predict_drum_type(audio_path: str, model, scaler, label_map):
         if binary_predictions[label_map[drum_name]] == 1 # Check if the corresponding label index is 1
     ]
 
-    if not predicted_drums:
-        return "No drums detected above threshold."
     return predicted_drums
+
+# --- New Function to Process Longer Audio Files ---
+def process_long_audio_and_predict(audio_filepath: str, model, scaler, label_map):
+    """
+    Loads a longer audio file, segments it, and predicts drum types for each segment.
+    """
+    print(f"\nProcessing long audio file: {audio_filepath}")
+    
+    y, sr = librosa.load(audio_filepath, sr=SAMPLE_RATE, mono=True)
+    
+    segment_length_samples = int(SEGMENT_LENGTH_SECONDS * sr)
+    hop_length_samples = int(HOP_LENGTH_SECONDS * sr)
+
+    predictions_over_time = []
+
+    # Iterate through the audio, segment by segment
+    total_segments = int(np.ceil((len(y) - segment_length_samples + hop_length_samples) / hop_length_samples))
+    if total_segments <= 0: # Handle very short files
+        print("Audio file too short to create any segments.")
+        return []
+
+    for i in tqdm(range(0, len(y) - segment_length_samples + 1, hop_length_samples), total=total_segments, desc="Segmenting & Predicting"):
+        start_sample = i
+        end_sample = i + segment_length_samples
+        
+        # Extract segment
+        segment = y[start_sample:end_sample]
+        
+        # Predict for the segment
+        predicted_drums = predict_drum_type_from_array(segment, model, scaler, label_map)
+        
+        if predicted_drums: # Only record if drums were detected
+            start_time = librosa.samples_to_time(start_sample, sr=sr)
+            predictions_over_time.append({'time': start_time, 'drums': predicted_drums})
+            
+    if not predictions_over_time:
+        print("No drum events detected in the entire audio file.")
+
+    return predictions_over_time
 
 
 if __name__ == "__main__":
@@ -85,7 +130,7 @@ if __name__ == "__main__":
 
     model_load_directory = os.path.join(project_root, "models")
     
-    # Update these paths if you change the saving extension in model_trainer.py
+    # Paths for your saved model components
     model_file = os.path.join(model_load_directory, "multi_label_drum_classifier_model.h5") 
     scaler_file = os.path.join(model_load_directory, "multi_label_scaler.joblib")
     label_map_file = os.path.join(model_load_directory, "multi_label_label_map.json")
@@ -103,17 +148,38 @@ if __name__ == "__main__":
         loaded_label_map = json.load(f)
     print("Model components loaded.")
 
-    print("\n--- Drum Prediction Example ---")
-    # --- IMPORTANT: Provide a path to an actual drum audio segment here ---
-    # You can pick one from your training_data/ENST_processed/ directory for testing
-    #example_audio_path = os.path.join(project_root, "training_data", "ENST_processed", "your_audio_segment.wav")
-    example_audio_path = os.path.join(project_root, "test_audio", "1_rock-prog_125_beat_4-4.wav")
-
+    # --- Example 1: Predict single segment (as before) ---
+    print("\n--- Single Segment Drum Prediction Example ---")
+    # Replace with a valid path to an actual audio segment from ENST_processed
+    single_segment_audio_path = os.path.join(project_root, "training_data", "ENST_processed", "1_rock-prog_125_beat_4-4.wav") 
     
-    if not os.path.exists(example_audio_path):
-        print(f"Error: Example audio file not found at {example_audio_path}")
-        print("Please replace 'your_audio_segment.wav' with a valid path to an actual audio segment.")
+    if not os.path.exists(single_segment_audio_path):
+        print(f"Error: Single segment example audio file not found at {single_segment_audio_path}")
+        print("Please replace '1_rock-prog_125_beat_4-4.wav' with a valid path to an actual segment for testing.")
     else:
-        print(f"Predicting drum types for: {example_audio_path}")
-        predicted_drums = predict_drum_type(example_audio_path, loaded_model, loaded_scaler, loaded_label_map)
-        print(f"Predicted drum types: {predicted_drums}")
+        print(f"Predicting drum types for single segment: {single_segment_audio_path}")
+        predicted_drums_single = predict_drum_type_from_array(
+            librosa.load(single_segment_audio_path, sr=SAMPLE_RATE, mono=True)[0], 
+            loaded_model, loaded_scaler, loaded_label_map
+        )
+        print(f"Predicted drum types: {predicted_drums_single}")
+
+    # --- Example 2: Process a longer audio file ---
+    print("\n--- Longer Audio File Prediction Example ---")
+    # IMPORTANT: Replace this with the path to your actual longer audio file
+    # This could be an MP3, WAV, etc. (librosa supports various formats)
+    long_audio_filepath = os.path.join(project_root, "reference_audio", "test.mp3") 
+    
+    if not os.path.exists(long_audio_filepath):
+        print(f"Error: Long audio file not found at {long_audio_filepath}")
+        print("Please place your longer audio file (e.g., 'test.mp3') inside the 'DrumScrip/treference_audio/' directory, or update the path.")
+    else:
+        results = process_long_audio_and_predict(long_audio_filepath, loaded_model, loaded_scaler, loaded_label_map)
+        
+        if results:
+            print("\n--- Detected Drum Events (Time-stamped) ---")
+            for event in results:
+                print(f"Time: {event['time']:.2f}s - Drums: {', '.join(event['drums'])}")
+        else:
+            print("\nNo drum events detected in the longer audio file.")
+    print("-------------------------------------------------------------")
