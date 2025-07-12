@@ -115,6 +115,7 @@ def prepare_dataset(data_dir: str, sr: int, segment_length_seconds: float):
     return X_scaled_for_cnn, y, scaler, label_map
 
 
+
 # --- CNN Model Definition ---
 def create_cnn_model(input_shape, num_classes):
     """
@@ -126,9 +127,10 @@ def create_cnn_model(input_shape, num_classes):
         MaxPooling1D(pool_size=2),
         Dropout(0.25),
 
-        # FIX: Changed kernel_size from 3 to 2 because input dimension after pooling is 2.
         Conv1D(filters=128, kernel_size=2, activation='relu'), 
-        MaxPooling1D(pool_size=2), # This will result in 1 time step
+        # FIX: Changed pool_size from 2 to 1 for the second MaxPooling1D
+        # because the input dimension is already 1.
+        MaxPooling1D(pool_size=1), 
         Dropout(0.25),
 
         Flatten(),
@@ -148,7 +150,6 @@ def create_cnn_model(input_shape, num_classes):
                       AUC(name='auc')
                   ])
     return model
-
 
 # --- Training and Evaluation ---
 def train_and_evaluate_model(data_dir: str, model_save_path: str, scaler_save_path: str,
