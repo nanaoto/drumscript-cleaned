@@ -172,7 +172,7 @@ if __name__ == "__main__":
     
     if not os.path.exists(long_audio_filepath):
         print(f"Error: Long audio file not found at {long_audio_filepath}")
-        print("Please place your longer audio file (e.g., 'test.mp3') inside the 'DrumScrip/treference_audio/' directory, or update the path.")
+        #print("Please place audio file (e.g., 'test.mp3') inside the 'DrumScript/reference_audio/' directory, or update the path.")
     else:
         results = process_long_audio_and_predict(long_audio_filepath, loaded_model, loaded_scaler, loaded_label_map)
         
