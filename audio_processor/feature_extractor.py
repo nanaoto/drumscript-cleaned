@@ -73,7 +73,7 @@ def extract_features(audio_segment: np.ndarray, sr: int) -> dict[str, np.ndarray
 if __name__ == "__main__":
     print("Running feature_extractor.py example with test.mp3...")
     try:
-        # Import necessary modules from your package
+        # Import necessary modules
         #from DrumScript.audio_processor.audio_loader import load_audio, normalise_audio
         #from DrumScript.audio_processor.onset_detector import detect_onsets
 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     except FileNotFoundError:
         print(f"\nERROR: The audio file '{test_mp3_path}' was not found.")
-        print("Please ensure you have placed 'test.mp3' inside your 'DrumScript/tests/' directory.")
+        print("Please ensure you have placed 'test.mp3' inside your 'DrumScript/tests/' directory, or updated the relative file_path.")
     except ImportError:
         print("\nERROR: Required modules/libraries might be missing.")
         print("Ensure 'soundfile', 'librosa', 'numpy', and your DrumScript modules are correctly installed and structured.")
