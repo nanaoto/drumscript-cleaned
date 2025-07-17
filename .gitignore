@@ -60,10 +60,18 @@ training_data/
 *.log
 .ipynb_checkpoints/ # Jupyter notebooks
 
+# temp .pyc specific python config files (find a better way to ensure these are ignored in future), temp
+.audio_processor/__pycache__/feature_extractor.cpython-312.pyc
+.audio_processor/__pycache__/** */
+.audio_processor/__pycache__/audio_loader.cpython-312.pyc
+.audio_processor/__pycache__/onset_detector.cpython-312.pyc
+/feature_extractor.cpython-312.pyc
+
+
 # temp files
 
-audio_processor/__pycache__/feature_extractor.cpython-312.pyc
-/feature_extractor.cpython-312.pyc
+
+
 logs.txt
 .gitignore
 labelled_datasets/audio_segments/
@@ -77,3 +85,4 @@ package-build.md
 drum_classifier/training_log.txt
 troubleshooting.md
 percussion_frequencies.md
+
