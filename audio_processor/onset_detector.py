@@ -7,6 +7,7 @@ This module will detect the onset (start) times of drum hits in the audio.
 import librosa
 import numpy as np
 import os # Import os for path manipulation
+import soundfile
 
 def detect_onsets(audio_data: np.ndarray, sr: int) -> list[float]:
     # ... (Your existing detect_onsets function code remains unchanged) ...
@@ -30,12 +31,12 @@ if __name__ == "__main__":
         sr = 22050 # Target sample rate for processing
 
         # --- Path to your actual drum recording (test.mp3) ---
-        # This dynamic path calculation should correctly point to DRUMSCRIPT/tests/test.mp3
+        # This dynamic path calculation should correctly point to DRUMSCRIPT/test_audio/test.mp3
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
         # Go up two levels from audio_processor/onset_detector.py to the outer DRUMSCRIPT/ folder
         project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-        # Construct the path to test.mp3 within the 'tests' directory
-        test_mp3_path = os.path.join(project_root, "DrumScript/tests", "test.mp3")
+        # Construct the path to test.mp3 within the 'test_audio' directory
+        test_mp3_path = os.path.join(project_root, "DrumScript/test_audio", "test.mp3")
 
 
         print(f"Attempting to load: {test_mp3_path}")
@@ -61,7 +62,7 @@ if __name__ == "__main__":
 
     except FileNotFoundError:
         print(f"\nERROR: The audio file '{test_mp3_path}' was not found.")
-        print("Please ensure you have placed 'test.mp3' inside your 'DrumScript/tests/' directory.")
+        print("Please ensure you have placed 'test.mp3' inside your 'DrumScript/test_audio/' directory.")
     except ImportError as e:
         print(f"\nERROR: Required modules/libraries might be missing or imports are incorrect: {e}")
         print("Ensure 'soundfile', 'librosa', 'numpy', and your DrumScript modules are correctly installed and structured.")
