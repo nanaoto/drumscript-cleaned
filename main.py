@@ -5,6 +5,9 @@ import json
 import librosa
 import tensorflow as tf
 import argparse
+from notation_generator import score_builder
+# Import the actual feature extraction logic
+from audio_processor.feature_extractor import extract_features
 
 print(f'#-------------------------------------------------------------')
 # --- Configuration (must match training configuration) ---
@@ -31,146 +34,106 @@ def load_model_components(models_dir: str):
 
     print(f"Loading model from: {model_path}")
     model = tf.keras.models.load_model(model_path)
-    
     print(f"Loading scaler from: {scaler_path}")
     scaler = joblib.load(scaler_path)
-    
     print(f"Loading label map from: {label_map_path}")
     with open(label_map_path, 'r') as f:
         label_map = json.load(f)
-    
+
     return model, scaler, label_map
 
-# --- Feature Extraction (must match model_trainer.py) ---
-def _extract_features(audio_segment, sr, segment_length_seconds):
+# --- Feature Extraction for Prediction (uses the imported extract_features) ---
+def _prepare_features_for_prediction(audio_segment: np.ndarray, sr: int) -> np.ndarray:
     """
-    Extracts MFCC features from an audio segment.
-    This function must be identical to the one used in model_trainer.py for consistency.
+    Calls the main extract_features function and flattens its output into a single vector.
+    The order of features in the flattened vector MUST match the order used during training.
     """
-    # Ensure the segment has the expected length, pad if necessary
-    if len(audio_segment) < int(sr * segment_length_seconds):
-        pad_length = int(sr * segment_length_seconds) - len(audio_segment)
-        audio_segment = np.pad(audio_segment, (0, pad_length), mode='constant')
-    elif len(audio_segment) > int(sr * segment_length_seconds):
-        audio_segment = audio_segment[:int(sr * segment_length_seconds)]
+    features_dict = extract_features(audio_segment, sr)
 
-    mfccs = librosa.feature.mfcc(y=audio_segment, sr=sr, n_mfcc=40)
-    mfccs = mfccs.T # Transpose to (time_frames, n_mfccs)
-    return mfccs
+    # The order here is CRUCIAL and must match how features were concatenated during training.
+    # Based on feature_extractor.py, the standard order is MFCCs first, then other features.
+    feature_vector = np.concatenate([
+        features_dict['mfccs'],
+        features_dict['spectral_centroid'],
+        features_dict['spectral_rolloff'],
+        features_dict['zero_crossing_rate'],
+        features_dict['rms']
+        # If 'chroma' or other features were used in training, they must be added here
+        # and extract_features must also be updated to generate them.
+    ])
+    return feature_vector
 
-# --- Inference Function ---
-def classify_drum_events(audio_path: str, model, scaler, label_map: dict,
-                         sr: int = SAMPLE_RATE, segment_length_seconds: float = SEGMENT_LENGTH_SECONDS,
-                         hop_length_seconds: float = 0.05,  # How much to slide the window, e.g., 50ms overlap
-                         prediction_threshold: float = 0.5):
+# --- Prediction Helper (adapted to use _prepare_features_for_prediction) ---
+def predict_drum_type_from_array(audio_segment_array: np.ndarray, loaded_model, loaded_scaler, loaded_label_map) -> tuple[list[str], list[float]]:
     """
-    Classifies drum events in a given audio file using the trained multi-label model.
+    Predicts drum type(s) from a single audio segment (numpy array).
     """
-    print(f"Classifying drum events in: {os.path.basename(audio_path)}")
-    audio, actual_sr = librosa.load(audio_path, sr=sr, mono=True)
-    if actual_sr != sr:
-        print(f"  Warning: Audio {os.path.basename(audio_path)} resampled from {actual_sr} to {sr}")
+    # Prepare features using the aligned extraction function
+    feature_vector = _prepare_features_for_prediction(audio_segment_array, SAMPLE_RATE)
 
+    # Scale features. The scaler expects a 2D array (1 sample, N features).
+    scaled_features = loaded_scaler.transform(feature_vector.reshape(1, -1))
+
+    # Predict probabilities
+    predictions = loaded_model.predict(scaled_features)[0]
+
+    # Map probabilities to drum types
+    predicted_drum_types = []
+    # Ensure label_map keys are sorted consistently with how the model's output labels were ordered
+    labels = sorted(loaded_label_map.keys())
+    for i, prob in enumerate(predictions):
+        if prob > 0.5: # Example threshold
+            predicted_drum_types.append(labels[i])
+    return predicted_drum_types, predictions.tolist() # Return raw predictions as list
+
+# --- Process Long Audio and Classify Events ---
+def classify_drum_events(audio_filepath: str, loaded_model, loaded_scaler, loaded_label_map, sr: int, segment_length_seconds: float, hop_length_seconds: float, prediction_threshold: float) -> list[dict]:
+    """
+    Processes a long audio file, segments it, and classifies drum events.
+    """
+    y, sr = librosa.load(audio_filepath, sr=sr, mono=True)
+    
     segment_length_samples = int(segment_length_seconds * sr)
     hop_length_samples = int(hop_length_seconds * sr)
 
     detected_events = []
-    
-    # Inverse map for easy lookup of drum names
-    # Ensure drum_type_names is sorted by index to match model output order
-    idx_to_drum_type = {idx: drum for drum, idx in label_map.items()}
-    drum_type_names = [idx_to_drum_type[i] for i in sorted(idx_to_drum_type.keys())]
 
-
-    # Iterate through the audio using a sliding window
-    for i in range(0, len(audio) - segment_length_samples + 1, hop_length_samples):
-        segment = audio[i : i + segment_length_samples]
+    for i in range(0, len(y) - segment_length_samples + 1, hop_length_samples):
+        segment = y[i : i + segment_length_samples]
         
-        # Ensure segment is not too short if near the end
-        if len(segment) < int(sr * 0.05): # Minimum 50ms segment to avoid errors
-            continue
-
-        features = _extract_features(segment, sr, segment_length_seconds)
+        # Predict drum types for the current segment
+        predicted_drums, probabilities = predict_drum_type_from_array(
+            segment, loaded_model, loaded_scaler, loaded_label_map
+        )
         
-        # Check if features were extracted successfully and have correct shape
-        if features is None or features.size == 0:
-            continue
-        if features.shape[0] == 0 or features.shape[1] == 0:
-            continue
-
-        # Reshape features for scaler and model: (1, time_frames * n_mfcc) for scaler
-        # Then (1, time_frames, n_mfcc) for model
-        original_features_shape = features.shape
-        features_reshaped_for_scaler = features.reshape(1, -1) # Flatten for scaler
-        
-        # Apply the same scaler used during training
-        features_scaled = scaler.transform(features_reshaped_for_scaler)
-        
-        # Reshape back to (1, time_frames, n_mfcc) for the CNN model
-        features_for_model = features_scaled.reshape(1, original_features_shape[0], original_features_shape[1])
-
-        # Make prediction
-        predictions = model.predict(features_for_model, verbose=0)[0] # Get probabilities for this single segment
-
-        # Convert probabilities to binary predictions based on threshold
-        binary_predictions = (predictions > prediction_threshold).astype(int)
-
-        # Get the drum types that were predicted as present
-        predicted_drum_types = [
-            drum_type_names[j] for j, is_present in enumerate(binary_predictions) if is_present == 1
-        ]
-        
-        # If any drums were detected in this segment, record the event
-        if predicted_drum_types:
-            onset_time = (i + segment_length_samples / 2) / sr # Center time of the segment
-            detected_events.append({'time': onset_time, 'drums': predicted_drum_types, 'probabilities': predictions.tolist()})
-
-    print(f"Detected {len(detected_events)} potential drum events.")
+        if predicted_drums:
+            event_time = i / sr
+            detected_events.append({
+                'time': event_time,
+                'drums': predicted_drums,
+                'probabilities': probabilities
+            })
     return detected_events
 
-# --- Main Execution ---
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="DrumScript: Classify drum events in audio using a trained multi-label CNN.")
-    parser.add_argument("audio_file", type=str, nargs='?', 
-                        help="Path to the input drum audio file (e.g., .wav). If not provided, an example from ENST_processed will be used.",
-                        default=None) # Make it optional
+
+def main():
+    parser = argparse.ArgumentParser(description='Process an audio file to detect drum events and generate drum sheet music.')
+    parser.add_argument('audio_file', type=str, help='Path to the input audio file (e.g., .wav, .mp3).')
+    parser.add_argument('--output_pdf', type=str, default='drum_score.pdf',
+                        help='Path to the output PDF file for the drum sheet music. Defaults to "drum_score.pdf".')
+    parser.add_argument('--tempo', type=int, default=120,
+                        help='The tempo (BPM) to use for quantizing drum events in the sheet music. Defaults to 120 BPM.')
+    parser.add_argument('--models_dir', type=str, default='models',
+                        help='Directory containing the trained model, scaler, and label map. Defaults to "models".')
 
     args = parser.parse_args()
 
-    # Determine project root dynamically
-    current_script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir)) # Go up from drum_classifier/
+    # --- Step 1: Load Trained Components ---
+    models_dir = os.path.join(os.path.dirname(__file__), args.models_dir)
+    loaded_model, loaded_scaler, loaded_label_map = load_model_components(models_dir)
 
-    models_directory = os.path.join(project_root,"DrumScript", "models")
-    
-    # --- Step 1: Load Trained Model and Components ---
-    try:
-        loaded_model, loaded_scaler, loaded_label_map = load_model_components(models_directory)
-        # Verify the label map (optional, but good for debugging)
-        print(f"Loaded drum types (in order): {list(loaded_label_map.keys())}")
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        print("Please ensure you have run model_trainer.py successfully to generate the model files.")
-        exit(1)
-    
-    print("\n--- Model Loaded Successfully ---")
-
-    # --- Step 2: Define an audio file to test ---
+    # --- Step 2: Validate Audio File Path ---
     test_audio_path = args.audio_file
-    if test_audio_path is None:
-        # If no audio file is provided via argument, try to find an example
-        processed_dir = os.path.join(project_root, "training_data", "ENST_processed")
-        wav_files = [f for f in os.listdir(processed_dir) if f.endswith('.wav')]
-        if wav_files:
-            # Use the first WAV file found as an example
-            test_audio_path = os.path.join(processed_dir, wav_files[0])
-            print(f"No audio file provided. Using example: {os.path.basename(test_audio_path)}")
-        else:
-            print(f"\nERROR: No audio file provided via argument and no WAV files found in '{processed_dir}' for example.")
-            print("Please provide a valid path to an audio file for inference (e.g., python3 -m drum_classifier.main your_audio.wav).")
-            print("Or ensure `training_data/ENST_processed/` contains `.wav` files after running `process_enst_dataset.py`.")
-            exit(1)
-
     if not os.path.exists(test_audio_path):
         print(f"\nERROR: Provided audio file not found at: {test_audio_path}")
         exit(1)
@@ -178,10 +141,10 @@ if __name__ == "__main__":
     # --- Step 3: Perform Inference ---
     print(f"\n--- Starting Inference on: {os.path.basename(test_audio_path)} ---")
     detected_drum_events = classify_drum_events(
-        test_audio_path,
-        loaded_model,
-        loaded_scaler,
-        loaded_label_map,
+        audio_filepath=test_audio_path,
+        loaded_model=loaded_model,
+        loaded_scaler=loaded_scaler,
+        loaded_label_map=loaded_label_map,
         sr=SAMPLE_RATE,
         segment_length_seconds=SEGMENT_LENGTH_SECONDS,
         hop_length_seconds=0.05, # Slide window by 50ms
@@ -193,14 +156,24 @@ if __name__ == "__main__":
     if detected_drum_events:
         for event in detected_drum_events:
             print(f"Time: {event['time']:.2f}s | Drums: {', '.join(event['drums'])}")
-            # Optional: Print raw probabilities for debugging
-            # print(f"  Raw Probabilities: {event['probabilities']}")
     else:
         print("No drum events detected in the provided audio file.")
 
-    print("\n--- Inference Complete ---")
-    print("\nNext Steps:")
-    print("1. You can run this script with your own audio files: `python3 -m drum_classifier.main path/to/your/audio.wav`")
-    print("2. The `hop_length_seconds` parameter in `classify_drum_events` determines how often the model makes a prediction. A smaller value (like 0.01-0.02s) might capture more subtle events but will increase processing time. A larger value (like 0.1s) is faster but might miss short events.")
-    print("3. The `prediction_threshold` (default 0.5) can be adjusted if you want more or fewer detections (lower threshold = more detections, higher = fewer).")
-    print("4. For generating drum sheet music, you will need to adapt the `notation_generator` module to accept these multi-label `detected_events` and map them correctly to notation.")
+    print("\n--- Inference Complete ---\n")
+
+    # --- Step 5: Generate Drum Sheet Music and Export to PDF ---
+    if detected_drum_events: # Only try to generate PDF if events were detected
+        print("--- Generating Drum Sheet Music PDF ---")
+        score_builder.build_and_export_drum_score(
+            detected_drum_events,
+            output_pdf_path=args.output_pdf,
+            audio_filepath=args.audio_file, # Pass the audio file path
+            tempo=args.tempo # Pass the tempo
+        )
+        print(f"\nDrum sheet music successfully generated to: {args.output_pdf}")
+    else:
+        print("No drum events detected, so no sheet music PDF will be generated.")
+
+
+if __name__ == "__main__":
+    main()
