@@ -17,7 +17,8 @@ def load_model_components(models_dir: str):
     """
     Loads the trained Keras model, StandardScaler, and label map.
     """
-    model_path = os.path.join(models_dir, "multi_label_drum_classifier_model.h5")
+    model_path = os.path.join("DrumScript",models_dir, "multi_label_drum_classifier_model.h5")
+    print(model_path)
     scaler_path = os.path.join(models_dir, "multi_label_scaler.joblib")
     label_map_path = os.path.join(models_dir, "multi_label_label_map.json")
 
@@ -140,7 +141,7 @@ if __name__ == "__main__":
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir)) # Go up from drum_classifier/
 
-    models_directory = os.path.join(project_root, "models")
+    models_directory = os.path.join(project_root, "DrumScript", "models")
     
     # --- Step 1: Load Trained Model and Components ---
     try:
@@ -158,7 +159,7 @@ if __name__ == "__main__":
     test_audio_path = args.audio_file
     if test_audio_path is None:
         # If no audio file is provided via argument, try to find an example
-        processed_dir = os.path.join(project_root, "training_data", "ENST_processed")
+        processed_dir = os.path.join(project_root, "DrumScript", "training_data", "ENST_processed")
         wav_files = [f for f in os.listdir(processed_dir) if f.endswith('.wav')]
         if wav_files:
             # Use the first WAV file found as an example
