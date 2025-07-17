@@ -1,7 +1,7 @@
 # DrumScript/notation_generator/helpers.py
 
 import math
-import constants
+from . import constants
 
 def round_to_nearest_subdivision(time_in_beats: float, subdivision: int) -> float:
     """

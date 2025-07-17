@@ -1,180 +1,163 @@
 # DrumScript/notation_generator/score_builder.py
 
-"""
-This script will build the score from the model output in order to generate PDF (pdf_exporter.py)
-"""
-
+import music21
 from typing import List, Dict, Any
-import os
-import math
-from helpers import seconds_to_beats, round_to_nearest_subdivision, format_event_for_notation_library
-import constants
+from collections import defaultdict
+from . import constants # Assuming constants.py defines DRUM_NOTATION_MAP
+from .helpers import round_to_nearest_subdivision, get_note_duration_name # Assuming these are useful
+from .pdf_exporter import generate_pdf # To actually export the PDF
 
-
-# --- Path to your actual drum recording (test.mp3) ---
-# This dynamic path calculation should correctly point to DRUMSCRIPT/other_modules
-current_script_dir = os.path.dirname(os.path.abspath(__file__)) # DrumScript/notation_generator
-# Go up two levels from audio_processor/onset_detector.py to the outer DRUMSCRIPT/ folder
-project_root = os.path.abspath(os.path.join(current_script_dir,"DrumScript/", os.pardir, os.pardir)) # goes up TWO levels from current directory (notation_generator)
-
-#print(project_root)
-#print(os.pardir)
-#print(current_script_dir)
-
-def quantize_events(classified_events: List[Dict[str, Any]], tempo: int, subdivision: int) -> List[Dict[str, Any]]:
+def get_drum_music21_note_info(drum_type: str) -> Dict[str, Any]:
     """
-    Quantizes the timing of classified drum events to the nearest rhythmic subdivision.
-
-    Args:
-        classified_events (List[Dict[str, Any]]): A list of dictionaries, where each dict
-                                                  represents a classified drum event with at least
-                                                  {'time': float, 'drum_type': str}. 'time' is in seconds.
-        tempo (int): The tempo in BPM for converting seconds to beats.
-        subdivision (int): The rhythmic subdivision to quantize to (e.g., 16 for sixteenth notes).
-
-    Returns:
-        List[Dict[str, Any]]: A list of quantized drum events, with 'time_beats' added.
-                              Each event will have 'time' (original seconds),
-                              'time_beats_quantized' (quantized time in beats),
-                              'drum_type', and other relevant data.
+    Retrieves music21-specific notation info for a given drum type from constants.DRUM_NOTATION_MAP.
     """
-    if not classified_events:
-        print("No classified events to quantize.")
-        return []
-
-    quantized_events = []
-    print(f"Quantizing {len(classified_events)} events to {subdivision}-note subdivision at {tempo} BPM...")
-
-    for event in classified_events:
-        onset_time_seconds = event['time']
-        drum_type = event['drum_type']
-
-        # Convert onset time from seconds to beats
-        onset_time_beats = seconds_to_beats(onset_time_seconds, tempo)
-
-        # Quantize the beat time
-        quantized_beat_time = round_to_nearest_subdivision(onset_time_beats, subdivision)
-
-        quantized_event = {
-            'time_seconds_original': onset_time_seconds,
-            'time_beats_quantized': quantized_beat_time,
-            'drum_type': drum_type,
-            # Add any other relevant event data here
-        }
-        quantized_events.append(quantized_event)
+    drum_map = constants.DRUM_NOTATION_MAP.get(drum_type)
+    if not drum_map:
+        print(f"Warning: No notation mapping found for drum type: {drum_type}. Using default kick.")
+        drum_map = constants.DRUM_NOTATION_MAP['kick'] # Fallback
     
-    print("Quantization complete.")
-    return quantized_events
-
-def map_to_drum_parts(quantized_events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Maps quantized drum events to specific drum kit parts,
-    assigning MIDI pitches and notation properties based on drum type.
-    This function might be implicitly handled by `format_event_for_notation_library`
-    or explicit here for clearer separation of concerns.
-
-    Args:
-        quantized_events (List[Dict[str, Any]]): List of quantized drum events.
-
-    Returns:
-        List[Dict[str, Any]]: Events with added notation-specific attributes like MIDI pitch,
-                              note head type, and conceptual staff position.
-    """
-    drum_part_events = []
-    print("Mapping drum events to notation parts...")
-    for event in quantized_events:
-        # Use the helper function to get notation-specific details
-        # Note: format_event_for_notation_library expects 'time' in seconds,
-        # but here we are using 'time_beats_quantized' for score positioning.
-        # We'll pass the drum_type and let it look up MIDI/staff position.
-        
-        # Create a temporary dict for formatting, as helper expects 'time' and 'drum_type'
-        temp_event_for_helper = {
-            'time': event['time_seconds_original'], # Pass original time if helper uses it for pitch map
-            'drum_type': event['drum_type']
-        }
-        formatted_notation_data = format_event_for_notation_library(temp_event_for_helper)
-
-        # Combine quantized time with notation data
-        drum_part_event = {
-            'time_beats': event['time_beats_quantized'],
-            'drum_type': event['drum_type'],
-            'midi_pitch': formatted_notation_data.get('midi_pitch'),
-            'note_head_type': formatted_notation_data.get('note_head_type'),
-            'staff_position': formatted_notation_data.get('staff_position'),
-            # You might also add duration here if you're inferring it (e.g., all hits are 16th notes)
-            'duration_beats': constants.QUARTER_NOTE / (config.QUANTIZATION_SUBDIVISION / 4.0) # E.g., for 16th, this is 0.25 beats
-        }
-        drum_part_events.append(drum_part_event)
-    print("Drum part mapping complete.")
-    return drum_part_events
-
-#def create_score_data(quantized_and_mapped_events: List[Dict[str, Any]]) -> Dict[str, Any]:
-def create_score_data(quantized_and_mapped_events: List[Dict[str, Any]], tempo: int) -> Dict[str, Any]:
-    """
-    Aggregates quantized and mapped drum events into a structured dictionary
-    representing the complete score, ready for PDF export.
-
-    Args:
-        quantized_and_mapped_events (List[Dict[str, Any]]): A list of events,
-                                                          each with quantized beat times
-                                                          and notation-specific attributes.
-
-    Returns:
-        Dict[str, Any]: A dictionary containing all data necessary to generate the score,
-                        e.g., tempo, time signature, and a list of formatted notes.
-                        Example structure:
-                        {
-                            'title': 'Drum Transcription',
-                            'tempo': int,
-                            'time_signature': '4/4',
-                            'parts': {
-                                'drums': [
-                                    {'beat_time': float, 'midi_pitch': int, 'note_head': str, 'staff_pos': float, 'duration_beats': float},
-                                    ...
-                                ]
-                            }
-                        }
-    """
-    if not quantized_and_mapped_events:
-        print("No events to build score data from.")
-        return {}
-
-    score_data = {
-        'title': 'DrumScript Transcription',
-        'composer': 'AI Generated',
-        #'tempo': config.DEFAULT_TEMPO_BPM, # Use default (120bpm) or derive from input when the script runs
-        'tempo': tempo, # Use the tempo passed as an argument
-        'time_signature': f"{constants.TIME_SIGNATURE_NUMERATOR}/{constants.TIME_SIGNATURE_DENOMINATOR}",
-        'parts': {
-            'drums': []
-        }
+    # music21.pitch.Pitch needs a nameWithOctave (e.g., 'F2', 'C3')
+    # music21.note.Unpitched needs a displayStep and displayOctave or a MIDI number
+    # The constants.py currently uses 'F2', 'C3' directly for staff_position, which is good.
+    
+    # We can use music21.pitch.Pitch to parse these string representations
+    # and get the MIDI number or display pitch properties for Unpitched notes.
+    
+    pitch_obj = music21.pitch.Pitch(drum_map['staff_position'])
+    
+    return {
+        'midi_pitch': pitch_obj.midi, # MIDI number
+        'note_head': drum_map['note_head'],
+        'display_step': pitch_obj.step,     # E.g., 'F', 'C'
+        'display_octave': pitch_obj.octave  # E.g., 2, 3
     }
 
-    current_measure = 0
-    current_beat_in_measure = 0.0
-    beats_per_measure = constants.TIME_SIGNATURE_NUMERATOR # Assuming quarter note beat
 
-    for event in quantized_and_mapped_events:
-        beat_time = event['time_beats']
+def build_and_export_drum_score(
+    detected_events: List[Dict[str, Any]],
+    tempo: int = 120,
+    output_filepath: str = "output_drum_sheet.pdf",
+    quantization_subdivision: int = 16 # e.g., 4 for quarter, 8 for eighth, 16 for sixteenth
+):
+    """
+    Builds a music21 score from detected multi-label drum events and exports it to PDF.
+
+    Args:
+        detected_events (List[Dict[str, Any]]): List of detected drum events.
+                                                Each event dict contains 'time' and 'drums' (list of strings).
+                                                e.g., [{'time': 0.1, 'drums': ['kick', 'hi-hat']}, ...]
+        tempo (int): Tempo in BPM for quantization.
+        output_filepath (str): Full path where the PDF file should be saved.
+        quantization_subdivision (int): Rhythmic subdivision to quantize to (e.g., 16 for 16th notes).
+    """
+    print("Building music21 score...")
+
+    # Create a new Score object
+    score = music21.stream.Score()
+    score.metadata = music21.metadata.Metadata()
+    score.metadata.title = "Drum Transcription"
+    score.metadata.composer = "DrumScript AI"
+
+    # Create a percussion Part
+    drum_part = music21.stream.Part()
+    drum_part.id = 'DrumKit'
+    drum_part.partName = 'Drum Kit'
+    drum_part.partAbbreviation = 'Dms.'
+
+    # Add a Percussion instrument to the part (important for music21 to know it's a drum part)
+    drum_part.append(music21.instrument.Percussion())
+
+    # Add a tempo indication
+    metronome = music21.tempo.MetronomeMark(number=tempo)
+    drum_part.append(metronome)
+
+    # Group events by quantized time to handle simultaneous hits
+    # Dictionary to store {quantized_time_beats: [list_of_drum_types_at_that_time]}
+    events_by_quantized_time = defaultdict(list)
+
+    for event in detected_events:
+        onset_time_seconds = event['time']
+        drum_types = event['drums'] # This is the list of detected drums for this event
+
+        # Convert seconds to beats
+        time_in_beats = (onset_time_seconds / 60.0) * tempo
         
-        # Determine measure and beat within measure (simplified)
-        # This logic needs to be robust for various time signatures and note durations
-        measure_number = math.floor(beat_time / beats_per_measure) + 1
-        beat_in_measure = beat_time % beats_per_measure
+        # Quantize the time to the nearest musical subdivision
+        quantized_time_beats = round_to_nearest_subdivision(time_in_beats, quantization_subdivision)
+        
+        # Add all drum types for this quantized time
+        events_by_quantized_time[quantized_time_beats].extend(drum_types)
 
-        # Append the formatted note to the score data
-        score_data['parts']['drums'].append({
-            'measure': measure_number,
-            'beat_in_measure': beat_in_measure,
-            'time_beats': beat_time,
-            'midi_pitch': event['midi_pitch'],
-            'drum_type': event['drum_type'],
-            'note_head_type': event['note_head_type'],
-            'staff_position': event['staff_position'],
-            'duration_beats': event['duration_beats'],
-            # You might add velocity, ties, dots etc. here
-        })
-    
-    print("Score data creation complete.")
-    return score_data
+    # Sort events by quantized time
+    sorted_quantized_times = sorted(events_by_quantized_time.keys())
+
+    # Iterate through quantized times and create music21 notes/chords
+    last_offset = 0.0
+    for quantized_time_beats in sorted_quantized_times:
+        current_offset = quantized_time_beats # Offset in quarterLength (beats)
+
+        # Handle rests if there's a gap between the last event and the current one
+        if current_offset > last_offset:
+            rest_duration = current_offset - last_offset
+            if rest_duration > 0.001: # Avoid adding tiny, negligible rests
+                rest = music21.note.Rest()
+                rest.duration.quarterLength = rest_duration
+                drum_part.append(rest)
+        
+        drums_at_this_time = events_by_quantized_time[quantized_time_beats]
+        
+        if len(drums_at_this_time) == 1:
+            # Single drum hit at this time
+            drum_type = drums_at_this_time[0]
+            note_info = get_drum_music21_note_info(drum_type)
+            
+            # Use music21.note.Unpitched for percussion notes
+            n = music21.note.Unpitched()
+            n.storedInstrument = music21.instrument.Percussion()
+            n.pitch = music21.pitch.Pitch() # Create a dummy pitch object to set properties
+            n.pitch.midi = note_info['midi_pitch'] # Set MIDI pitch for playback/positioning
+            n.notehead = note_info['note_head']
+            n.duration.quarterLength = (4.0 / quantization_subdivision) # Duration of one subdivision (e.g., 16th note)
+            drum_part.append(n)
+
+        elif len(drums_at_this_time) > 1:
+            # Multiple drum hits at this time (create a PercussionChord)
+            
+            # The music21.chord.Unpitched object is what we want for simultaneous percussion notes.
+            # However, you can't just set multiple pitches directly on Unpitched.
+            # Instead, you create a list of Unpitched notes and then a Chord containing them.
+            # music21.chord.PercussionChord is specifically designed for this.
+            
+            notes_in_chord = []
+            for drum_type in drums_at_this_time:
+                note_info = get_drum_music21_note_info(drum_type)
+                
+                # Create an Unpitched note for each drum type in the chord
+                up = music21.note.Unpitched()
+                up.storedInstrument = music21.instrument.Percussion()
+                up.pitch = music21.pitch.Pitch()
+                up.pitch.midi = note_info['midi_pitch']
+                up.notehead = note_info['note_head']
+                notes_in_chord.append(up)
+            
+            # Create a PercussionChord from the list of Unpitched notes
+            p_chord = music21.percussion.PercussionChord(notes_in_chord)
+            p_chord.duration.quarterLength = (4.0 / quantization_subdivision) # Duration of one subdivision
+            drum_part.append(p_chord)
+        
+        last_offset = current_offset + (4.0 / quantization_subdivision) # Update last offset for rest calculation
+
+
+    score.append(drum_part)
+
+    # --- Export to PDF ---
+    # The generate_pdf function in pdf_exporter.py already handles music21 Stream to PDF conversion
+    # It takes a score-like object and an output filepath.
+    generate_pdf(score, output_filepath) # Pass the music21 score directly
+
+    print(f"Music21 score built and ready for export to {output_filepath}")
+
+
+# You might also want a separate function to just build the score object
+# if you want to inspect it before exporting, but for now, this combined
+# function is straightforward for the main script.

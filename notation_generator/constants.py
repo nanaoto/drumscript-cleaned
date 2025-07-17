@@ -1,15 +1,22 @@
 # DrumScript/notation_generator/constants.py
 
 # Drum part mapping (should align with your model's classification)
-DRUM_NOTATION_MAP = { 
-    'kick': {'note_head': 'x', 'staff_position': 'F2'},
-    'snare': {'note_head': 'normal', 'staff_position': 'C3'},
-    'hi-hat': {'note_head': 'x', 'staff_position': 'G3'},
-    'crash': {'note_head': 'x', 'staff_position': 'C4'},
-    'ride': {'note_head': 'x', 'staff_position': 'A3'},
+
+DRUM_NOTATION_MAP = {
+    'kick': {'note_head': 'x', 'staff_position': 'F2'}, # F2 for kick (bottom space)
+    'snare': {'note_head': 'normal', 'staff_position': 'C3'}, # C3 for snare (middle space)
+    'hi-hat': {'note_head': 'x', 'staff_position': 'G3'}, # G3 for hi-hat (top line)
+    'crash': {'note_head': 'x', 'staff_position': 'C4'}, # C4 for crash (above staff)
+    'ride': {'note_head': 'x', 'staff_position': 'A3'},  # A3 for ride (space above top line)
+    'tom': {'note_head': 'normal', 'staff_position': 'E3'}, # E3 for tom (space below hi-hat)
     # Add more drum types as classified by your model
+    # Example for other possible drum types:
+    # 'floor_tom': {'note_head': 'normal', 'staff_position': 'A2'}, # A2 for floor tom
+    # 'high_tom': {'note_head': 'normal', 'staff_position': 'D3'}, # D3 for high tom
+    # 'mid_tom': {'note_head': 'normal', 'staff_position': 'B2'}, # B2 for mid tom
 }
 
+# ... (rest of your constants.py file)
 # --- Musical Durations ---
 # Common note durations as fractions of a whole note (1.0)
 WHOLE_NOTE = 1.0
