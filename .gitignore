@@ -46,7 +46,7 @@ reference_audio/**
 # Trained models and processed data (optional, but often good practise)
 
 # If you want to keep models in Git, remove or comment out these lines
-models/
+# models/
 # If training_data contains large audio files you don't want to commit
 DrumScript/training_data/
 training_data/*
