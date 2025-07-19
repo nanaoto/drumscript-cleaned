@@ -229,7 +229,7 @@ def main():
             detected_drum_events,
             #output_pdf_path=args.output_pdf,
             output_filepath=args.output_pdf,
-            audio_filepath=args.audio_file, # Pass the audio file path
+            #audio_filepath=args.audio_file, # Pass the audio file path
             tempo=args.tempo # Pass the tempo
         )
         print(f"\nDrum sheet music successfully generated to: {args.output_pdf}")
