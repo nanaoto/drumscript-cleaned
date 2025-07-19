@@ -11,7 +11,7 @@ from notation_generator import score_builder
 # Import the actual feature extraction logic
 from audio_processor.feature_extractor import extract_features
 
-print(f'#-------------------------------------------------------------')
+print(f'-------------------------------------------------------------')
 # --- Configuration (must match training configuration) ---
 SAMPLE_RATE = 22050
 SEGMENT_LENGTH_SECONDS = 0.2
@@ -227,13 +227,15 @@ def main():
         print("--- Generating Drum Sheet Music PDF ---")
         score_builder.build_and_export_drum_score(
             detected_drum_events,
-            output_pdf_path=args.output_pdf,
+            #output_pdf_path=args.output_pdf,
+            output_filepath=args.output_pdf,
             audio_filepath=args.audio_file, # Pass the audio file path
             tempo=args.tempo # Pass the tempo
         )
         print(f"\nDrum sheet music successfully generated to: {args.output_pdf}")
     else:
         print("No drum events detected, so no sheet music PDF will be generated.")
+        print(f'-------------------------------------------------------------')
 
 
 if __name__ == "__main__":
