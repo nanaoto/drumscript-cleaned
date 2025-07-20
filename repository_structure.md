@@ -1,8 +1,8 @@
 ## `DrumScript`  Python Package Structure
 
 
-<!--date_created: sun-15-june2025-->
-<!--date_updated: fri-18-jul-2025-->
+<!--date_created: sun-15-june-2025-->
+<!--date_updated: sun-02-jul-2024-->
 
 ---
 ### **Modular Structure**
@@ -32,15 +32,15 @@ This document outlines the directory and file structure of the `DrumScript` proj
 ├── drum_classifier/               # Machine learning module for drum sound/audio classification (uses Deep Learning)
 │   │   ├── __init__.py
 │   │   ├── data_preparer.py       # Prepares audio features into a dataset for training
-│   │   ├── drum_model.py          # Defines the drum classification model architecture (e.g., scikit-learn based)
+│   │   ├── drum_model.py          # Defines the drum classification model architecture (e.g., Convolutional Neural Network (CNN) using Tensorflow)
 │   │   └── model_trainer.py       # Script for training, evaluating, and saving the drum classification model
 │   │   ├── docs/                  # Associated documentation for drum_classifier/ module
 ├── notation_generator/            # Generates musical notation and pdf sheet music
 │   │   ├── __init__.py
-│   │   ├── constants.py       
-│   │   ├── helpers.py            # Defines the drum classification model architecture (e.g., scikit-learn based)
-│   │   └── pdf_exporter.py       # Script for training, evaluating, and saving the drum classification model
-│   │   ├── score_builder.py       
+│   │   ├── constants.py          
+│   │   ├── helpers.py            
+│   │   └── pdf_exporter.py        # Script for converting drum mappings to pdf output
+│   │   ├── score_builder.py       # Builds a score based on extracted features and predictive power of machine learning model in drum_classifier/
 ├── models/                       # Outputs from model learning used to generate mappings in new audio
 │   │   ├── drum_classifier_model.joblib
 │   │   ├── label_map.json
