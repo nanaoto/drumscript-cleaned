@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf # For loading Keras model
 import json # For loading label map
 import librosa # Needed for feature processing within the classify_events context
+from typing import List, Dict, Any
 
 # Configuration constants (ideally these would be in a shared config file)
 SAMPLE_RATE = 22050
