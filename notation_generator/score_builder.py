@@ -138,8 +138,12 @@ def build_and_export_drum_score(
                 # Create an Unpitched note for each drum type in the chord
                 up = music21.note.Unpitched()
                 up.storedInstrument = music21.instrument.Percussion()
-                up.pitch = music21.pitch.Pitch()
-                up.pitch.midi = note_info['midi_pitch']
+                #up.pitch = music21.pitch.Pitch()
+                #up.pitch.midi = note_info['midi_pitch']
+                pitch_for_display = music21.pitch.Pitch(note_info['staff_position'])
+                up.displayStep = pitch_for_display.step
+                up.displayOctave = pitch_for_display.octave
+                up.midi = note_info['midi_pitch']
                 up.notehead = note_info['note_head']
                 notes_in_chord.append(up)
             
