@@ -4,17 +4,19 @@ import argparse
 import os
 import sys
 import numpy as np
+import joblib    # For loading scaler
+import json      # For loading label_map
+import tensorflow as tf # For loading Keras models
 
 # No need for sys.path manipulation here.
 # When main.py is run directly from the package root (DrumScript/),
 # Python's import system will correctly resolve sub-package imports.
 
 try:
-    # --- CORRECTED IMPORTS ---
-    # These imports are now relative to the 'DrumScript' package root
-    # where main.py itself resides.
     from audio_processor import audio_loader, onset_detector, feature_extractor
-    from drum_classifier import drum_model # Assuming you'll load a pre-trained model
+    # Import the drum_classifier package itself, not drum_model directly here
+    # as classify_events will be a module-level function in drum_classifier/__init__.py
+    import drum_classifier
     from notation_generator import score_builder, pdf_exporter
 except ImportError as e:
     print(f"Error importing DrumScript modules: {e}")
@@ -37,69 +39,89 @@ def transcribe_audio_to_sheet_music(input_audio_path: str, output_pdf_path: str)
 
     # Define a segment length for feature extraction (e.g., 200ms)
     # This should match how your model was trained if feature extraction for individual hits
-    segment_length_seconds = 0.2 
+    segment_length_seconds = 0.2
 
     try:
         # 1. Load and Process Audio
-        print("Step 1/3: Loading and processing audio and detecting onsets...")
+        print("Step 1/4: Loading and processing audio and detecting onsets...")
         audio_data, sr = audio_loader.load_audio(input_audio_path)
-        
+
         onsets = onset_detector.detect_onsets(audio_data, sr)
         print(f"Detected {len(onsets)} onsets.")
 
-        # 2. Extract Features and Classify Drum Sounds
-        print("Step 2/3: Extracting features and classifying drum sounds...")
-        
-        all_drum_events = [] # To store (onset_time, predicted_drum_type) tuples
-        
-        # Load your trained model and any necessary scalers/label maps here once
-        # Example (uncomment and adjust paths when your model is ready):
-        # # Assuming models are in a 'models' directory at the DrumScript root
-        # models_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
-        # model_path = os.path.join(models_dir, "multi_label_drum_classifier_model.h5")
-        # label_map_path = os.path.join(models_dir, "multi_label_label_map.json")
-        # scaler_path = os.path.join(models_dir, "multi_label_scaler.joblib")
-        # trained_model = drum_model.load_model(model_path)
-        # label_map = drum_model.load_label_map(label_map_path)
-        # scaler = drum_model.load_scaler(scaler_path)
+        # --- Load the pre-trained drum classification model, scaler, and label map ---
+        # Ensure these paths are correct relative to where you run main.py
+        # Assuming 'models' directory is at the project root level, adjacent to 'DrumScript'
+        # Get the project root by going up two levels from main.py's directory if main.py is in DrumScript/
+        #project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # This goes up two levels
+        #models_dir = os.path.join(project_root, "models")
+         # Calculate models_dir assuming it's within the DrumScript package,
+        # specifically in a 'models' directory at the same level as main.py
+        current_dir = os.path.dirname(os.path.abspath(__file__)) # /Users/victoriamckinney/Library/Visual Studio Projects/DrumScript/
+        models_dir = os.path.join(current_dir, "models") # /Users/victoriamckinney/Library/Visual Studio Projects/DrumScript/models/
 
+        # Use the multi_label model names from your training log
+        model_path = os.path.join(models_dir, "multi_label_drum_classifier_model.h5") # Keras model
+        scaler_path = os.path.join(models_dir, "multi_label_scaler.joblib")
+        label_map_path = os.path.join(models_dir, "multi_label_label_map.json")
+
+        print(f"\n--- Loading Model Components ---")
+        print(f"Loading model from: {model_path}")
+        print(f"Loading scaler from: {scaler_path}")
+        print(f"Loading label map from: {label_map_path}")
+
+        try:
+            model = tf.keras.models.load_model(model_path) # Load Keras model directly
+            scaler = joblib.load(scaler_path)
+            with open(label_map_path, 'r') as f:
+                label_map = json.load(f)
+            print(f"Loaded drum types (in order): {list(label_map.keys())}")
+            print(f"--- Model Components Loaded Successfully ---")
+        except Exception as e:
+            print(f"Error loading model components: {e}")
+            print("Please ensure your models are trained and saved correctly in the 'models/' directory.")
+            sys.exit(1)
 
         if not onsets:
             print("No onsets detected. Cannot proceed with feature extraction and classification.")
             print(f"--- Transcription Complete (No Drums Found)! ---")
-            # Ensure pdf_exporter.export_to_pdf can handle an empty list for an empty score
-            pdf_exporter.generate_pdf([], output_pdf_path) # Changed to generate_pdf based on score_builder
+            # Ensure score_builder can handle an empty list of events for an empty score
+            score_builder.build_and_export_drum_score(
+                detected_events=[], # Pass an empty list of events
+                tempo=120, # Default tempo
+                output_filepath=output_pdf_path,
+                quantization_subdivision=16
+            )
             return
 
+        # 2. Extract Features from Detected Onsets
+        print("Step 2/4: Extracting features from detected onsets...")
+        # This function needs to be implemented in feature_extractor.py
+        # It should iterate through onsets, extract segments, and then extract features for each segment.
+        # It should return a list of dictionaries, where each dictionary contains 'onset_time' and 'features'.
+        detected_onsets_features = feature_extractor.extract_features_from_onsets(
+            audio_data, onsets, sr, segment_length_seconds
+        )
+        print(f"Extracted features for {len(detected_onsets_features)} segments.")
 
-        for i, onset_time in enumerate(onsets):
-            onset_sample = int(onset_time * sr)
-            segment_length_samples = int(segment_length_seconds * sr)
 
-            segment_start = onset_sample
-            segment_end = min(onset_sample + segment_length_samples, len(audio_data))
-            
-            audio_segment = audio_data[segment_start:segment_end]
+        # 3. Classify Drum Sounds
+        print(f"Step 3/4: Classifying drum sounds...")
+        # This function needs to be implemented in drum_classifier/__init__.py
+        # It will take the extracted features, the loaded model, scaler, and label map,
+        # and return a list of dictionaries, each with 'time' and 'drums' keys.
+        all_drum_events = drum_classifier.classify_events(
+            detected_onsets_features,
+            model,
+            scaler,
+            label_map
+        )
 
-            if audio_segment.size == 0:
-                print(f"  Warning: Onset {i+1} at {onset_time:.2f}s has an empty audio segment. Skipping.")
-                continue
+        print(f"Classified {len(all_drum_events)} drum events.")
+        print(f"--- Inference Complete ---")
 
-            features_for_segment = feature_extractor.extract_features(audio_segment, sr)
-            
-            # --- Placeholder for your ML Model Prediction ---
-            # Replace this with your actual drum classification model integration
-            
-            dummy_drum_types = ["Kick", "Snare", "Hi-Hat", "Open-Hat", "Closed-Hat", "Tom"]
-            predicted_drum_type = dummy_drum_types[i % len(dummy_drum_types)]
-            
-            all_drum_events.append({"time": onset_time, "drums": [predicted_drum_type]})
-            print(f"  Onset at {onset_time:.2f}s classified as: {predicted_drum_type}")
-
-        print(f"Classified {len(all_drum_events)} drum events in total.")
-
-        # 3. Generate Musical Notation and PDF
-        print("Step 3/3: Generating musical notation and PDF...")
+        # 4. Generate Musical Notation and PDF
+        print("Step 4/4: Generating musical notation and PDF...")
         output_dir = os.path.dirname(output_pdf_path)
         if output_dir and not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -144,7 +166,7 @@ def main():
     )
 
     args = parser.parse_args()
-    
+
     transcribe_audio_to_sheet_music(args.input_audio_path, args.output_pdf_path)
 
 if __name__ == "__main__":
