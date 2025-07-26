@@ -27,6 +27,15 @@ SEGMENT_LENGTH_SECONDS = 0.2
 # This must match the ALL_DRUM_TYPES list used in process_enst_dataset.py
 ALL_DRUM_TYPES = sorted(['kick', 'snare', 'hi-hat', 'crash', 'ride', 'tom']) # Ensure this matches process_enst_dataset.py
 
+# Define FFT parameters for consistency with feature_extractor, could put these into constants.py later
+N_FFT = 1024
+HOP_LENGTH = 512
+
+# Calculate the expected number of frames (timesteps) per segment, could put these into constants.py later
+EXPECTED_N_FRAMES = 1 + (int(SEGMENT_LENGTH_SECONDS * SAMPLE_RATE) - N_FFT) // HOP_LENGTH
+if EXPECTED_N_FRAMES < 1:
+    EXPECTED_N_FRAMES = 1 # Ensure at least one frame
+
 
 # --- Feature Extraction Helper ---
 def _extract_features(audio_path, sr, segment_length_seconds):
@@ -83,7 +92,7 @@ def load_multi_label_dataset(data_dir: str, sr: int, segment_length_seconds: flo
         if not os.path.exists(audio_path):
             print(f"Warning: Audio file not found for {filename}. Skipping.")
             continue
-        
+
         mfccs = _extract_features(audio_path, sr, segment_length_seconds)
         if mfccs is not None:
             features.append(mfccs)
@@ -106,12 +115,12 @@ def load_multi_label_dataset(data_dir: str, sr: int, segment_length_seconds: flo
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X_reshaped_for_scaler)
-    
+
     # Reshape back to (num_samples, num_time_frames, num_mfccs) for CNN input
     X_final = X_scaled.reshape(original_shape)
 
     print(f"Loaded {len(X_final)} samples. Features shape: {X_final.shape}, Labels shape: {y.shape}")
-    
+
     # The label_map for multi-label is simply the list of all_drum_types
     label_map = {drum_type: idx for idx, drum_type in enumerate(ALL_DRUM_TYPES)}
 
@@ -128,7 +137,8 @@ def create_cnn_model(input_shape, num_classes):
         # Keras Conv1D expects (batch, timesteps, features)
         # So we use X.reshape(X.shape[0], X.shape[1], X.shape[2], 1) if MFCCs are 2D
         # For our (time_frames, n_mfcc) 2D input from MFCCs, we'll add an extra dim.
-        Conv1D(filters=64, kernel_size=5, activation='relu', input_shape=input_shape),
+        tf.keras.Input(shape=input_shape), # Explicitly define Input layer
+        Conv1D(filters=64, kernel_size=5, activation='relu'),
         MaxPooling1D(pool_size=2),
         Dropout(0.3),
 
@@ -144,13 +154,13 @@ def create_cnn_model(input_shape, num_classes):
 
     # Adam optimizer is a good default
     optimizer = Adam(learning_rate=0.001)
-    
+
     # BinaryCrossentropy for multi-label classification
     # Metrics for multi-label evaluation
     model.compile(optimizer=optimizer,
                   loss=BinaryCrossentropy(),
                   metrics=[BinaryAccuracy(), Precision(), Recall(), AUC(multi_label=True)])
-    
+
     model.summary()
     return model
 
@@ -190,7 +200,7 @@ def train_and_evaluate_model(data_dir: str, model_save_path: str, scaler_save_pa
     # Input shape for CNN: (time_frames, n_mfcc)
     input_shape = (X_train.shape[1], X_train.shape[2])
     num_classes = y_train.shape[1] # Number of distinct drum types
-    
+
     model = create_cnn_model(input_shape, num_classes)
 
     # 4. Train Model
@@ -206,7 +216,7 @@ def train_and_evaluate_model(data_dir: str, model_save_path: str, scaler_save_pa
     # 5. Evaluate Model
     print("\nEvaluating the model on the test set...")
     loss, binary_accuracy, precision, recall, auc = model.evaluate(X_test, y_test, verbose=0)
-    
+
     print(f"\n--- Test Set Evaluation ---")
     print(f"Loss: {loss:.4f}")
     print(f"Binary Accuracy: {binary_accuracy:.4f}")
@@ -222,10 +232,7 @@ def train_and_evaluate_model(data_dir: str, model_save_path: str, scaler_save_pa
     # For multi-label, classification_report needs specific handling, often per-class.
     # Or, it needs to be adapted. F1-score for multi-label is often micro or macro averaged.
     # For simplicity, print overall F1, precision, recall using weighted average
-    
-    # Flatten y_test and y_pred for sklearn metrics for a single report
-    # This might not be ideal for per-label insight but gives overall
-    
+
     # Option 1: Per-class metrics
     report = classification_report(y_test, y_pred, target_names=ALL_DRUM_TYPES, zero_division=0)
     print(report)
@@ -239,7 +246,7 @@ def train_and_evaluate_model(data_dir: str, model_save_path: str, scaler_save_pa
 
     # 6. Save Model, Scaler, and Label Map
     print("\nSaving trained model, scaler, and label map...")
-    
+
     # Save TensorFlow Keras model
     model.save(model_save_path)
     print(f"CNN model saved to: {model_save_path}")
@@ -265,7 +272,7 @@ if __name__ == "__main__":
     # Define paths for data and saved models
     data_directory = os.path.join(project_root, "training_data") # Points to 'training_data' which contains 'ENST_processed'
     model_save_directory = os.path.join(project_root, "models")
-    
+
     # Ensure 'models' directory exists
     os.makedirs(model_save_directory, exist_ok=True)
 
