@@ -33,7 +33,7 @@ class DrumClassifier:
         else:
             raise ValueError(f"Unsupported model_type: {model_type}. Choose from 'random_forest', 'svm', 'mlp'.")
 
-        print(f"Initialized DrumClassifier with model type: {model_type}")
+        print(f"Initialised DrumClassifier with model type: {model_type}")
 
     def train(self, X: np.ndarray, y: np.ndarray):
         """
@@ -44,7 +44,7 @@ class DrumClassifier:
             y (np.ndarray): Label vector (numerical labels).
         """
         if self.model is None:
-            raise RuntimeError("Model not initialized. Call __init__ first.")
+            raise RuntimeError("Model not initialised. Call __init__ first.")
         print(f"Training {self.model_type} model...")
         self.model.fit(X, y)
         print("Model training complete.")
