@@ -72,7 +72,7 @@ def extract_features(audio_segment: np.ndarray, sr: int) -> dict[str, np.ndarray
 
 
 if __name__ == "__main__":
-    print("Running feature_extractor.py example with test.mp3...")
+    print("Running feature_extractor.py example with test.mp3/test.wav...")
     try:
         # Import necessary modules from your package
         #from DrumScript.audio_processor.audio_loader import load_audio, normalise_audio
@@ -84,18 +84,21 @@ if __name__ == "__main__":
         sr = 22050 # Target sample rate for processing
         segment_length_seconds = 0.2 # Length of audio segment around each onset (e.g., 200ms)
 
-        # --- Path to your actual drum recording (test.mp3) ---
-        # This dynamic path calculation should correctly point to DRUMSCRIPT/test_audio/test.mp3
+        # --- Path to your actual drum recording (test.wav) ---
+        # This dynamic path calculation should correctly point to DRUMSCRIPT/test_audio/test.mp3 or DRUMSCRIPT/test_audio/test.wav
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
         # Go up two levels from audio_processor/feature_extractor.py to the outer DRUMSCRIPT/ folder
         project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-        # Construct the path to test.mp3 within the 'tests' directory
-        test_mp3_path = os.path.join(project_root, "DrumScript/test_audio", "test.mp3")
+        # Construct the path to test.mp3/test.wav within the 'test_audio' directory
+        #test_mp3_path = os.path.join(project_root, "DrumScript/test_audio", "test.mp3") # Change .mp3 to .wav if using WAV, or other audio format
+        #test_mp3_path = os.path.join(project_root, "DrumScript/test_audio", "test.wav") # Change .wav to .mp3 if using MP3, or other audio format
+        test_audio_path = os.path.join(project_root, "DrumScript/test_audio", "test.wav") # Change .wav to .mp3 if using MP3, or other audio format
 
 
-        print(f"Attempting to load: {test_mp3_path}")
-        # Load and normalise the test.mp3 audio
-        audio_data, sample_rate = load_audio(test_mp3_path, sr=sr)
+
+        print(f"Attempting to load: {test_audio_path}")
+        # Load and normalise the test.mp3/test.wav audio
+        audio_data, sample_rate = load_audio(test_audio_path, sr=sr)
         normalised_audio = normalise_audio(audio_data)
         print(f"Loaded audio: Shape={normalised_audio.shape}, Sample Rate={sample_rate}, Duration={len(normalised_audio)/sample_rate:.2f} seconds")
 
@@ -140,8 +143,8 @@ if __name__ == "__main__":
             print("No onsets detected in the audio, cannot extract features.")
 
     except FileNotFoundError:
-        print(f"\nERROR: The audio file '{test_mp3_path}' was not found.")
-        print("Please ensure you have placed 'test.mp3' inside your 'DrumScript/test_audio/' directory.")
+        print(f"\nERROR: The audio file '{test_audio_path}' was not found.")
+        print("Please ensure you have placed 'test.mp3/test.wav' inside your 'DrumScript/test_audio/' directory.")
     #except ImportError:
         #print("\nERROR: Required modules/libraries might be missing.")
         #print("Ensure 'soundfile', 'librosa', 'numpy', and your DrumScript modules are correctly installed and structured.")

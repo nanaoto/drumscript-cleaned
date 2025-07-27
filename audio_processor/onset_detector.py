@@ -20,7 +20,7 @@ def detect_onsets(audio_data: np.ndarray, sr: int) -> list[float]:
 
 
 if __name__ == "__main__":
-    print("Running onset_detector.py example with test.mp3...")
+    print("Running onset_detector.py example with test.wav/test.mp3...")
     try:
         # Import necessary modules from your package
         # Note: You might need 'from DrumScript.audio_processor.audio_loader import ...'
@@ -30,23 +30,25 @@ if __name__ == "__main__":
 
         sr = 22050 # Target sample rate for processing
 
-        # --- Path to your actual drum recording (test.mp3) ---
-        # This dynamic path calculation should correctly point to DRUMSCRIPT/test_audio/test.mp3
+        # --- Path to your actual drum recording (test.wav/test.mp3) ---
+        # This dynamic path calculation should correctly point to DRUMSCRIPT/test_audio/test.wav
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
         # Go up two levels from audio_processor/onset_detector.py to the outer DRUMSCRIPT/ folder
         project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-        # Construct the path to test.mp3 within the 'test_audio' directory
-        test_mp3_path = os.path.join(project_root, "DrumScript/test_audio", "test.mp3")
+        # Construct the path to test.mp3/test.wav within the 'test_audio' directory
+        #test_mp3_path = os.path.join(project_root, "DrumScript/test_audio", "test.mp3") # Change .mp3 to .wav if using WAV, or other audio format
+        test_audio_path = os.path.join(project_root, "DrumScript/test_audio", "test.wav") # Change .wav to .mp3 if using MP3, or other audio format
+        
 
 
-        print(f"Attempting to load: {test_mp3_path}")
-        # Load and normalise the test.mp3 audio
-        audio_data, sample_rate = load_audio(test_mp3_path, sr=sr)
+        print(f"Attempting to load: {test_audio_path}")
+        # Load and normalise the test.mp3/test.wav audio
+        audio_data, sample_rate = load_audio(test_audio_path, sr=sr)
         normalised_audio = normalise_audio(audio_data)
         print(f"Loaded audio: Shape={normalised_audio.shape}, Sample Rate={sample_rate}, Duration={len(normalised_audio)/sample_rate:.2f} seconds")
 
-        # Detect onsets from test.mp3
-        print("\nDetecting onsets from test.mp3...")
+        # Detect onsets from test.mp3/test.wav
+        print("\nDetecting onsets from test.mp3/test.wav...")
         onsets = detect_onsets(normalised_audio, sample_rate)
         print(f"Detected {len(onsets)} onsets.")
 
@@ -58,11 +60,11 @@ if __name__ == "__main__":
             if len(onsets) > 10:
                 print(f"  ...and {len(onsets) - 10} more onsets.")
         else:
-            print("No onsets detected in test.mp3.")
+            print("No onsets detected in test.mp3/test.wav.")
 
     except FileNotFoundError:
-        print(f"\nERROR: The audio file '{test_mp3_path}' was not found.")
-        print("Please ensure you have placed 'test.mp3' inside your 'DrumScript/test_audio/' directory.")
+        print(f"\nERROR: The audio file '{test_audio_path}' was not found.")
+        print("Please ensure you have placed 'test.mp3/test.wav' inside your 'DrumScript/test_audio/' directory.")
     except ImportError as e:
         print(f"\nERROR: Required modules/libraries might be missing or imports are incorrect: {e}")
         print("Ensure 'soundfile', 'librosa', 'numpy', and your DrumScript modules are correctly installed and structured.")
