@@ -25,7 +25,7 @@ if project_root not in sys.path:
 from notation_generator.score_builder import build_and_export_drum_score
 from notation_generator.helpers import format_drum_event
 
-# The raw text output from your predict.py script
+# The raw text output from the predict.py script
 predict_output_raw = """
 Time: 0.00s - Drums: hi-hat
 Time: 0.10s - Drums: hi-hat
