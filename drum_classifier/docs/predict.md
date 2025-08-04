@@ -30,6 +30,41 @@ This document outlines the purpose and usage of two key scripts in the `DrumScri
     * **Listen to the MIDI**: Open the generated `.mid` file in a media player or a Digital Audio Workstation (DAW) to hear the transcribed drum pattern. Compare it to the original audio to see if the timing and drum types sound correct.
     * **View the Notation**: Open the generated `.xml` file in a music notation software like **MuseScore**. This will show you the visual sheet music. You can then compare the written score to the original audio to check for accuracy in note placement, drum types, and rhythm.
 
+> To run `generate_score.py` navigate to `DrumScript.drum_classifier` directory:
+
+```zsh
+cd drum_classifier
+
+```
+
+> Then run
+
+
+```zsh
+
+python3 generate_score.py
+```
+
+**Outputs**
+
+```zsh
+
+Reading drum events from: ~DrumScript/drum_classifier/prediction_output.json
+Successfully loaded 443 drum events.
+
+Generating MIDI and MusicXML files...
+✅ Successfully generated MIDI file: ~DrumScript/outputs/drum_classifier/midi/prediction_output.mid
+✅ Successfully generated MusicXML file: ~DrumScript/outputs/drum_classifier/xml/prediction_output.xml
+```
+
+> The resultant `.xml` and `.MIDI` files will be stored in `DrumScript/outputs/drum_classifier/midi` and `DrumScript/outputs/drum_classifier/XML`
+
+> **NOTE:** Please **do not** push these files to the repo. 
+> **NOTE:** If these directories do not exist **they will be created when `generate_score.py` is run**
+
+
+
+
 ---
 
 <!--END-->
