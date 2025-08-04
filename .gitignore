@@ -70,6 +70,12 @@ models/models_development/ConvolutionalNeuralNetworks/*
 *.log
 .ipynb_checkpoints/ # Jupyter notebooks
 
+# Logic/DAW files
+
+
+outputs/outputs.logicx/*
+outputs/outputs.logicx
+
 # output files:
 
 output/my_drum_score1__fri25jul2025.pdf
@@ -82,6 +88,9 @@ outputs/notation_generator/pdf/my_drum_score1__thurs24jul2025.pdf
 outputs/notation_generator/pdf/my_drum_score2__fri25jul2025.pdf
 outputs/notation_generator/pdf/my_drum_score2__thurs24jul2025.pdf
 outputs/notation_generator/xml/my_drum_score3__fri25jul2025.musicxml
+outputs/drum_classifier/midi/sheetmusic.pdf
+outputs/drum_classifier/xml/sheetmusic.pdf
+
 
 # temp .pyc specific python config files (find a better way to ensure these are ignored in future), temp
 .audio_processor/__pycache__/feature_extractor.cpython-312.pyc
@@ -92,7 +101,6 @@ outputs/notation_generator/xml/my_drum_score3__fri25jul2025.musicxml
 
 
 # temp files
-
 
 
 logs.txt
