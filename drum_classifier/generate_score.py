@@ -5,21 +5,23 @@ import sys
 import json
 import music21
 
-def generate_midi_and_xml_from_json(input_json_path: str, output_base_path: str):
+def generate_midi_and_xml_from_json(input_json_path: str, midi_output_path: str, xml_output_path: str):
     """
     Reads a JSON file of drum events and generates a MIDI and MusicXML file
-    using the music21 library.
+    in separate, specified directories using the music21 library.
 
     Args:
         input_json_path (str): The path to the input JSON file containing drum event data.
-        output_base_path (str): The directory where the output MIDI and XML files will be saved.
+        midi_output_path (str): The directory where the output MIDI file will be saved.
+        xml_output_path (str): The directory where the output XML file will be saved.
     """
     if not os.path.exists(input_json_path):
         print(f"Error: Input JSON file not found at '{input_json_path}'.")
         return
 
-    # Create the output directory if it doesn't exist
-    os.makedirs(output_base_path, exist_ok=True)
+    # Create the output directories if they don't exist
+    os.makedirs(midi_output_path, exist_ok=True)
+    os.makedirs(xml_output_path, exist_ok=True)
 
     print(f"Reading drum events from: {input_json_path}")
     try:
@@ -61,14 +63,15 @@ def generate_midi_and_xml_from_json(input_json_path: str, output_base_path: str)
 
     score.insert(0, drum_part)
 
-    # Generate output file paths
+    # Generate output filenames
     output_filename = os.path.splitext(os.path.basename(input_json_path))[0]
-    midi_filepath = os.path.join(output_base_path, f"{output_filename}.mid")
-    xml_filepath = os.path.join(output_base_path, f"{output_filename}.xml")
-
-    # Write the score to MIDI and MusicXML files
+    
+    # Write the score to MIDI and MusicXML files in their respective directories
     print("\nGenerating MIDI and MusicXML files...")
+    midi_filepath = os.path.join(midi_output_path, f"{output_filename}.mid")
     score.write('midi', fp=midi_filepath)
+    
+    xml_filepath = os.path.join(xml_output_path, f"{output_filename}.xml")
     score.write('musicxml', fp=xml_filepath)
     
     print(f"✅ Successfully generated MIDI file: {midi_filepath}")
@@ -82,6 +85,7 @@ if __name__ == "__main__":
 
     # Define paths
     input_json = os.path.join(current_script_dir, "prediction_output.json")
-    output_dir = os.path.join(project_root, "outputs", "drum_classifier", "midi")
+    midi_output_dir = os.path.join(project_root, "outputs", "drum_classifier", "midi")
+    xml_output_dir = os.path.join(project_root, "outputs", "drum_classifier", "xml")
 
-    generate_midi_and_xml_from_json(input_json, output_dir)
+    generate_midi_and_xml_from_json(input_json, midi_output_dir, xml_output_dir)
