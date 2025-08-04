@@ -117,3 +117,17 @@ data_labeller/data_labeller.ipynb
 audio_processor/feature_extractor.md
 
 
+# Logic/DAW files
+
+outputs/outputs.logicx/Alternatives/000/DisplayState.plist
+outputs/outputs.logicx/Alternatives/000/DisplayStateArchive
+outputs/outputs.logicx/Alternatives/000/MetaData.plist
+outputs/outputs.logicx/Alternatives/000/ProjectData
+outputs/outputs.logicx/Alternatives/000/WindowImage.jpg
+outputs/outputs.logicx/Alternatives/000/Project File Backups/00/MetaData.plist
+outputs/outputs.logicx/Alternatives/000/Project File Backups/00/ProjectData
+outputs/outputs.logicx/Alternatives/000/Project File Backups/01/MetaData.plist
+outputs/outputs.logicx/Alternatives/000/Project File Backups/01/ProjectData
+outputs/outputs.logicx/Alternatives/000/Undo Data.nosync/8_rock-groove8_65_beat_4-4.wav/Undo Data
+outputs/outputs.logicx/Alternatives/000/Undo Data.nosync/8_rock-groove8_65_beat_4-4_Drums.aif/Undo Data
+outputs/outputs.logicx/Resources/ProjectInformation.plist
