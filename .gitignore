@@ -59,6 +59,8 @@ models/ConvolutionalNeuralNetworks/*
 models/RandomForest/*
 models/docs/*
 models/development/*
+models/models_development/RandomForest/*
+models/models_development/ConvolutionalNeuralNetworks/*
 
 # Specific IDE files
 .vscode/ # VS Code settings
@@ -100,4 +102,5 @@ output/my_drum_score2__thurs24jul2025.pdf
 drum_notation.ipynb
 data_labeller/data_labeller.ipynb
 audio_processor/feature_extractor.md
+
 
