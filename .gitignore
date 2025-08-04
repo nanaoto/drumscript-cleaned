@@ -78,18 +78,9 @@ outputs/outputs.logicx
 
 # output files:
 
-output/my_drum_score1__fri25jul2025.pdf
-output/my_drum_score2__fri25jul2025.pdf
-output/my_drum_score3__fri25jul2025.musicxml
-outputs/drum_classifier/midi/prediction_output.mid
-outputs/drum_classifier/midi/prediction_output.xml
-outputs/notation_generator/pdf/my_drum_score1__fri25jul2025.pdf
-outputs/notation_generator/pdf/my_drum_score1__thurs24jul2025.pdf
-outputs/notation_generator/pdf/my_drum_score2__fri25jul2025.pdf
-outputs/notation_generator/pdf/my_drum_score2__thurs24jul2025.pdf
-outputs/notation_generator/xml/my_drum_score3__fri25jul2025.musicxml
-outputs/drum_classifier/midi/sheetmusic.pdf
-outputs/drum_classifier/xml/sheetmusic.pdf
+output/*
+outputs/notation_generator/*
+outputs/drum_classifier/*
 
 
 # temp .pyc specific python config files (find a better way to ensure these are ignored in future), temp
@@ -139,3 +130,4 @@ outputs/outputs.logicx/Alternatives/000/Project File Backups/01/ProjectData
 outputs/outputs.logicx/Alternatives/000/Undo Data.nosync/8_rock-groove8_65_beat_4-4.wav/Undo Data
 outputs/outputs.logicx/Alternatives/000/Undo Data.nosync/8_rock-groove8_65_beat_4-4_Drums.aif/Undo Data
 outputs/outputs.logicx/Resources/ProjectInformation.plist
+
