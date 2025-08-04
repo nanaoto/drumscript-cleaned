@@ -36,7 +36,6 @@ This document outlines the directory and file structure of the `DrumScript` proj
 │   │   └── model_trainer.py       # Script for training, evaluating, and saving the drum classification model
 │   │   └── predict.py             # Script for testing the model outputs on an existing audip
 │   │   ├── docs/                  # Associated documentation for drum_classifier/ module
-
 ├── notation_generator/            # Generates musical notation and pdf sheet music
 │   │   ├── __init__.py
 │   │   ├── constants.py          
@@ -50,6 +49,9 @@ This document outlines the directory and file structure of the `DrumScript` proj
 │   │   ├── multi_label_label_map           
 │   │   └── multi_label_scaler.joblib
 │   │   ├── scaler     
+├── outputs/                       # XML, Midi and PDF outputs, stored relative to the module origin
+│   │   ├──drum_classifier/.         # The subdirectories of .outputs/drum_classifier/ are generated when the code is run.
+│   │   ├──notation_generator/
 ├── theory/                        # Some helpful theory on drums, percussion, and advanced audio signal processing.
 ├── utils/                         # Utility functions (e.g., for file handling, configuration)
 
