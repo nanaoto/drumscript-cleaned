@@ -23,7 +23,7 @@ This document outlines the directory and file structure of the `DrumScript` proj
 ├── requirements.txt               # Direct dependencies (generated/used by `uv pip install -r`)
 ├── LICENSE                        # Project licensing information (e.g., MIT License)
 ├── repository_structure.md        # This document
-├── docs/                          # Documentation on how DrumScript works, as well as contributing, testing etc.
+├── developer_docs/                # Documentation on how DrumScript works, as well as contributing, testing etc.
 ├── audio_processor/               # Handles audio loading, normalisation, onset detection, and feature extraction
 │   │   ├── __init__.py
 │   │   ├── audio_loader.py        # Loads and normalises audio files
@@ -42,7 +42,7 @@ This document outlines the directory and file structure of the `DrumScript` proj
 │   │   ├── helpers.py            
 │   │   └── pdf_exporter.py        # Script for converting drum mappings to pdf output
 │   │   ├── score_builder.py       # Builds a score based on extracted features and predictive power of machine learning model in drum_classifier/
-├── models/                       # Outputs from model learning used to generate mappings in new audio
+├── models/                        # Outputs from model learning used to generate mappings in new audio
 │   │   ├── drum_classifier_model.joblib
 │   │   ├── label_map.json
 │   │   ├── multi_label_drum_classifier_model.h5     
@@ -50,7 +50,7 @@ This document outlines the directory and file structure of the `DrumScript` proj
 │   │   └── multi_label_scaler.joblib
 │   │   ├── scaler     
 ├── outputs/                       # XML, Midi and PDF outputs, stored relative to the module origin
-│   │   ├──drum_classifier/.         # The subdirectories of .outputs/drum_classifier/ are generated when the code is run.
+│   │   ├──drum_classifier/        # The subdirectories of .outputs/drum_classifier/ are generated when the code is run.
 │   │   ├──notation_generator/
 ├── theory/                        # Some helpful theory on drums, percussion, and advanced audio signal processing.
 ├── utils/                         # Utility functions (e.g., for file handling, configuration)
