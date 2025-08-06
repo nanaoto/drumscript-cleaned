@@ -26,6 +26,8 @@ env/
 .archive
 development/*
 development/
+.development/*
+.development/
 tests/*
 tests/
 local_tests/*
