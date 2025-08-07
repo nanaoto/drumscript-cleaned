@@ -152,7 +152,7 @@ if __name__ == "__main__":
                     
                     # You can print statistics of the features_array here if desired
                     # For example, print mean of first few feature dimensions
-                    # print(f"  Mean of first 5 feature dimensions: {np.mean(features_array[:, :5], axis=0)}")
+                    print(f"  Mean of first 5 feature dimensions: {np.mean(features_array[:, :5], axis=0)}")
                 else:
                     print(f"  Onset {i+1} segment is empty, cannot extract features.")
         else:
