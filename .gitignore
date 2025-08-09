@@ -134,3 +134,4 @@ outputs/outputs.logicx/Alternatives/000/Undo Data.nosync/8_rock-groove8_65_beat_
 outputs/outputs.logicx/Resources/ProjectInformation.plist
 
 drum_classifier/correct_prediction_output.json
+notation_generator/constants__new.py
