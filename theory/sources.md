@@ -2,7 +2,7 @@
 
 This is a document that outlines the sources of various files provided in the `DrumScript/theory/` folder.
 <!--date_created:weds-06-aug-2025-->
-<!--date_updated:thurs-07-aug-2025-->
+<!--date_updated:sat-09-aug-2025-->
 
 ---
 ### Sources
@@ -12,6 +12,11 @@ This is a document that outlines the sources of various files provided in the `D
 * **`basic_drumkit_keys.jpeg`:**[https://www.drumeo.com/beat/how-to-read-drum-music/?srsltid=AfmBOoqnBc3_-xDyvbFzvSLy5ESJ0QPZODdCIMR-I1kPvuTrjPsQAWQC](https://www.drumeo.com/beat/how-to-read-drum-music/?srsltid=AfmBOoqnBc3_-xDyvbFzvSLy5ESJ0QPZODdCIMR-I1kPvuTrjPsQAWQC)
 * **`basic_drum_notation_keys.png`:**[https://www.schoolofrock.com/resources/drums/drum-notation-for-beginners](https://www.schoolofrock.com/resources/drums/drum-notation-for-beginners)
 * **`General MIDI Standard Percussion Set Key Map`:** [https://musescore.org/sites/musescore.org/files/General%20MIDI%20Standard%20Percussion%20Set%20Key%20Map.pdf](https://musescore.org/sites/musescore.org/files/General%20MIDI%20Standard%20Percussion%20Set%20Key%20Map.pdf)
+* **`Percussion MIDI Map (Detailed) (Includes Classical Percussion Instruments)`:**[
+https://usermanuals.finalemusic.com/SongWriter2012Win/Content/PercussionMaps.htm](
+https://usermanuals.finalemusic.com/SongWriter2012Win/Content/PercussionMaps.htm)
+
+
   
 
 
