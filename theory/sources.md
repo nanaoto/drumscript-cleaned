@@ -21,6 +21,7 @@ This is a document that outlines the sources of various files provided in the `D
 ### Other useful references:
 
 * **[Everything Producers Need To Know About Drum Maps](https://ask.video/article/audio/everything-producers-need-to-know-about-drum-maps)**
+* **[Midi2Sheet Music (Melobytes app)](https://melobytes.com/en/app/midi2sheet)**
 
 
 ---
