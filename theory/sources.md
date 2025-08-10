@@ -2,10 +2,12 @@
 
 This is a document that outlines the sources of various files provided in the `DrumScript/theory/` folder.
 <!--date_created:weds-06-aug-2025-->
-<!--date_updated:sat-09-aug-2025-->
+<!--date_updated:sun-10-aug-2025-->
 
 ---
 ### Sources
+
+> **NOTE:** **All theory and sources** listed here are free-to-use at the time of sharing, and are **non-affiliated** with the `CODEOWNERS` of `DrumScript`.
 
 * **`Improving Perceptual Quality of Drum Transcription with the Expanded Groove MIDI Dataset.pdf`**: [https://magenta.withgoogle.com/oaf-drums](https://magenta.withgoogle.com/oaf-drums)
 * **`notating_pitch.png`**: [https://fundamentalsofmusictheory.umasscreate.net/unit-5/](https://fundamentalsofmusictheory.umasscreate.net/unit-5/)
@@ -15,6 +17,12 @@ This is a document that outlines the sources of various files provided in the `D
 * **`Percussion MIDI Map (Detailed) (Includes Classical Percussion Instruments)`:**[
 https://usermanuals.finalemusic.com/SongWriter2012Win/Content/PercussionMaps.htm](
 https://usermanuals.finalemusic.com/SongWriter2012Win/Content/PercussionMaps.htm)
+* **`Scientific-Pitch-Notation--SPN---on-the-staff`:** [https://www.musicandtheory.com/an-easy-guide-to-scientific-pitch-notation/](https://www.musicandtheory.com/an-easy-guide-to-scientific-pitch-notation/)
+* **`How to Read Drum Music Notation _ Gear4music.pdf`:** [https://www.gear4music.com/blog/drum-music-notation/](https://www.gear4music.com/blog/drum-music-notation/)
+	- **`infographic_g4m__how_to_read_drum_notation.png`:**[https://www.gear4music.com/blog/drum-music-notation/](https://www.gear4music.com/blog/drum-music-notation/)]**
+	- **`infographic_g4m__infographic_g4m__repeat_signs.png`:**[https://www.gear4music.com/blog/drum-music-notation/](https://www.gear4music.com/blog/drum-music-notation/)]**
+	- **`infographic_g4m__time_sigs_and_note_values.png`:**[https://www.gear4music.com/blog/drum-music-notation/](https://www.gear4music.com/blog/drum-music-notation/)]**
+* **`Master-Drum-Key_R2.pdf`:**[https://cdn.shopify.com/s/files/1/0559/8055/6373/files/Master-Drum-Key_R2.pdf?v=1663945955](https://cdn.shopify.com/s/files/1/0559/8055/6373/files/Master-Drum-Key_R2.pdf?v=1663945955)
 
 
   
