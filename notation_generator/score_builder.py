@@ -4,6 +4,7 @@
 import music21
 from typing import List, Dict, Any
 from collections import defaultdict
+from . import constants
 from constants import DRUM_NOTATION_MAP # Assuming constants.py defines DRUM_NOTATION_MAP
 from helpers import round_to_nearest_subdivision, get_note_duration_name # Assuming these are useful
 from pdf_exporter import generate_pdf # To actually export the PDF
@@ -33,7 +34,7 @@ def get_drum_music21_note_info(drum_type: str) -> Dict[str, Any]:
     return {
         'midi_pitch': drum_map['midi_program'], # Use midi_program from map for accurate playback
         'note_head': drum_map['note_head'],
-        'display_step': pitch_obj.step,     # E.g., 'F', 'C' - for visual staff placement
+    'display_step': pitch_obj.step,     # E.g., 'F', 'C' - for visual staff placement
         'display_octave': pitch_obj.octave  # E.g., 2, 3 - for visual staff placement
     }
 
