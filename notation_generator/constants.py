@@ -4,58 +4,58 @@
 
 DRUM_NOTATION_MAP = {
     'kick': {
-        'staff_position': 'F2',  # F2 for kick (bottom space on a 5-line staff)
+        'STAFF_POS': 'F2',  # F2 for kick (bottom space on a 5-line staff)
         'midi_program': 36,      # General MIDI Kick Drum 1 (MIDI 36)
         'note_head': 'normal',   # Standard notehead
         'display_name': 'Bass Drum'
     },
     'snare': {
-        'staff_position': 'C3',  # C3 for snare (middle space on a 5-line staff)
+        'STAFF_POS': 'C3',  # C3 for snare (middle space on a 5-line staff)
         'midi_program': 38,      # General MIDI Acoustic Snare (MIDI 38)
         'note_head': 'normal',   # Standard notehead
         'display_name': 'Snare Drum'
     },
     'hi-hat': { # This 'hi-hat' entry can represent a closed hi-hat
-        'staff_position': 'F#3', # F#3 for hi-hat (top line on a 5-line staff) - often shown with 'x' head
+        'STAFF_POS': 'F#3', # F#3 for hi-hat (top line on a 5-line staff) - often shown with 'x' head
         'midi_program': 42,      # General MIDI Closed Hi-Hat (MIDI 42)
         'note_head': 'x',        # 'x' notehead for cymbals/hi-hats
         'display_name': 'Hi-Hat (Closed)'
     },
     'open-hat': { # New entry for open hi-hat
-        'staff_position': 'A#3', # A#3 for open hi-hat (above staff)
+        'STAFF_POS': 'A#3', # A#3 for open hi-hat (above staff)
         'midi_program': 46,      # General MIDI Open Hi-Hat (MIDI 46)
         'note_head': 'x',        # 'x' notehead for cymbals/hi-hats
         'display_name': 'Hi-Hat (Open)'
     },
     'closed-hat': { # New entry for closed hi-hat (can be an alternative to 'hi-hat' above, or specifically for when the model distinguishes)
-        'staff_position': 'F#3', # F#3, same as 'hi-hat' for visual consistency
+        'STAFF_POS': 'F#3', # F#3, same as 'hi-hat' for visual consistency
         'midi_program': 42,      # General MIDI Closed Hi-Hat (MIDI 42)
         'note_head': 'x',
         'display_name': 'Hi-Hat (Closed)'
     },
     'crash': {
-        'staff_position': 'C4',  # C4 for crash (above staff)
+        'STAFF_POS': 'C4',  # C4 for crash (above staff)
         'midi_program': 49,      # General MIDI Crash Cymbal 1 (MIDI 49)
         'note_head': 'x',
         'display_name': 'Crash Cymbal'
     },
     'ride': {
-        'staff_position': 'A3',  # A3 for ride (space above top line)
+        'STAFF_POS': 'A3',  # A3 for ride (space above top line)
         'midi_program': 51,      # General MIDI Ride Cymbal 1 (MIDI 51)
         'note_head': 'x',
         'display_name': 'Ride Cymbal'
     },
     'tom': { # This can be a generic tom, or you can add specific ones like 'high_tom', 'mid_tom', 'low_tom'
-        'staff_position': 'E3',  # E3 for tom (space below hi-hat)
+        'STAFF_POS': 'E3',  # E3 for tom (space below hi-hat)
         'midi_program': 50,      # General MIDI High Tom (MIDI 50) - can be adjusted
         'note_head': 'normal',
         'display_name': 'Tom Drum'
     },
     # Add more drum types as classified by your model
     # Example for other possible drum types (already present in the original file, just for context):
-    # 'floor_tom': {'note_head': 'normal', 'staff_position': 'A2'}, # A2 for floor tom
-    # 'high_tom': {'note_head': 'normal', 'staff_position': 'D3'}, # D3 for high tom
-    # 'mid_tom': {'note_head': 'normal', 'staff_position': 'B2'}, # B2 for mid tom
+    # 'floor_tom': {'note_head': 'normal', 'STAFF_POS': 'A2'}, # A2 for floor tom
+    # 'high_tom': {'note_head': 'normal', 'STAFF_POS': 'D3'}, # D3 for high tom
+    # 'mid_tom': {'note_head': 'normal', 'STAFF_POS': 'B2'}, # B2 for mid tom
 }
 
 # --- Musical Durations ---
@@ -92,7 +92,17 @@ NOTEHEAD_X = 'x' # For cymbals, hi-hats, often snare side stick
 # These might relate to MIDI pitch or specific lines/spaces on a percussion staff.
 # For a 5-line percussion staff, these are relative positions.
 # Actual Y-coordinates would be calculated by pdf_exporter or score_builder.
-STAFF_POS_KICK = -2    # Example relative position for kick drum
-STAFF_POS_SNARE = 0    # Example relative position for snare drum
-STAFF_POS_HI_HAT = 2   # Example relative position for hi-hat
+#STAFF_POS_KICK = -2    # Example relative position for kick drum
+#STAFF_POS_SNARE = 0    # Example relative position for snare drum
+#STAFF_POS_HI_HAT = 2   # Example relative position for hi-hat
 # ... and so on for other drums
+
+STAFF_POS_SNARE = 0 #This is the baseline (e.g., the 3rd space).
+STAFF_POS_KICK = -2 
+STAFF_POS_HIHAT_OPEN = 7
+STAFF_POS_HIHAT_CLOSED = -4 
+STAFF_POS_RIDE = 6
+STAFF_POS_CRASH = 8
+STAFF_POS_TOM1 = 3 
+STAFF_POS_TOM2 = 4 
+STAFF_POS_TOM3 = 5
