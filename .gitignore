@@ -92,22 +92,6 @@ outputs/drum_classifier/*
 .audio_processor/__pycache__/onset_detector.cpython-312.pyc
 /feature_extractor.cpython-312.pyc
 
-
-# temp files
-
-
-logs.txt
-.gitignore
-labelled_datasets/audio_segments/
-output.pdf
-output.xml
-drum_classifier/neural_networks.md
-drum_classifier/logs/model_trainer_logs_1.txt
-drum_classifier/logs/
-model_trainer1_cnn.txt
-package-build.md
-drum_classifier/training_log.txt
-troubleshooting.md
 # percussion_frequencies.md
 
 output/my_drum_score.pdf
@@ -135,3 +119,22 @@ outputs/outputs.logicx/Resources/ProjectInformation.plist
 
 drum_classifier/correct_prediction_output.json
 notation_generator/constants__new.py
+
+
+
+# temp files
+
+
+logs.txt
+.gitignore
+labelled_datasets/audio_segments/
+output.pdf
+output.xml
+drum_classifier/neural_networks.md
+drum_classifier/logs/model_trainer_logs_1.txt
+drum_classifier/logs/
+model_trainer1_cnn.txt
+package-build.md
+drum_classifier/training_log.txt
+troubleshooting.md
+# git_log.txt
