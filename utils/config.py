@@ -6,7 +6,7 @@ AUDIO_SEGMENT_LENGTH_SECONDS = 0.2
 
 # Model Settings
 MODELS_DIRECTORY = 'models' # Path relative to project root
-MODEL_TYPE = 'random_forest' # e.g., 'random_forest', 'svm', etc.
+MODEL_TYPE = 'cnn' # e.g., 'random_forest', 'svm', etc.
 
 # Notation Generation Settings
 DEFAULT_TEMPO_BPM = 120
