@@ -1,15 +1,17 @@
 ## **DrumScript**
 
 <!--date_created: sun-15-june-2025-->
-<!--date_updated: mon-07-july-2025-->
+<!--date_updated: mon-18july-2025-->
 
 > **Python 3.12.10**
 
 `DrumScript` is a `Python package` that converts **drum audio** into **sheet music (drum notation)** in PDF format. 
 
-It leverages **advanced audio signal processing** and **machine learning** to detect individual drum hits (kick, snare, hi-hat, etc.) and translate them into a musical score.
+It leverages **advanced audio signal processing** and **machine learning** to detect individual drum hits (*kick*, *snare*, *hi-hat*, etc.) and translate them into a **musical score**, either as `.XML` or `.pdf`.
 
-### **[Package Structure](repository_structure.md)**
+***[hello.drumscript@gmail.com](hello.drumscript@gmail.com)***
+
+---
 
  - **[Features](#features-1)**
  - **[Installation](#installation)**
@@ -174,7 +176,23 @@ python main.py my_drum_track.wav drum_score.pdf --tempo 120
 
 `DrumScript` relies on a machine learning model to classify drum sounds. For optimal performance, you might need to train or fine-tune this model with your own data.
 
-Instructions for training the model will be provided in a dedicated section (e.g., `drum_classifier/README.md`) within the `drum_classifier/` directory. This typically involves:
+The initial model provided with this package was trained using the **ENST-Drums database**.
+
+#### Training Data: ENST-Drums Dataset
+
+The model was trained on the ENST-Drums dataset, a comprehensive audio-visual database of drum performances created for research purposes. This extensive collection features recordings from three professional drummers on their own kits, using various sticks (sticks, rods, brushes, and mallets) to capture a wide diversity of sounds.
+
+The dataset is fully annotated, providing precise timings for each drum event, which makes it an excellent resource for training machine learning models for drum transcription.
+
+**Link to the original paper**:
+
+>**[***ENST-Drums: an extensive audio-visual database for drum signals processing***. Olivier Gillet and Gaël Richard. ***In Proc of the 7th International Society for Music Information Retrieval Conference (ISMIR'06), Victoria, Canada, 2006.***](https://archives.ismir.net/ismir2006/paper/000027.pdf)**
+
+> You can find more information and download the dataset from the official webpage: ***[http://www.enst.fr/\~grichard/ENST-drums/](http://www.enst.fr/~grichard/ENST-drums/)***.
+
+--
+
+Instructions for training the model with your own data will be provided in a dedicated section (e.g., `drum_classifier/README.md`) within the `drum_classifier/` directory. This typically involves:
 
 1.  Preparing a labeled dataset of drum sounds.
 2.  Running a training script (e.g., `python drum_classifier/train_model.py`).
@@ -187,6 +205,13 @@ We welcome contributions to `DrumScript`!
 
 If you have ideas for improvements, bug fixes, or new features, please **[open an issue](https://github.com/victoria-mckinney/DrumScript/issues/new)** or submit a **[pull request](https://github.com/victoria-mckinney/DrumScript/pulls)**.
 
+####  Training the Model
+Instructions for training the model with your own data will be provided in a dedicated section (e.g., `drum_classifier/README.md`) within the `drum_classifier/` directory. This typically involves:
+
+1.  Preparing a labeled dataset of drum sounds.
+2.  Running a training script (e.g., `python drum_classifier/train_model.py`).
+
+
 
 <!--
 ---### License # Comment out again once license is chosen/added
@@ -197,8 +222,9 @@ This project is licensed under the **MIT License**. See the **[`LICENSE` file]()
 
 ### Contact
 
-For questions or support, please **[open an issue](https://github.com/victoria-mckinney/DrumScript/issues)** on the **[GitHub repository](https://github.com/victoria-mckinney/DrumScript)**.
+For questions or support, please **[open an issue](https://github.com/victoria-mckinney/DrumScript/issues)** on the **[GitHub repository](https://github.com/victoria-mckinney/DrumScript)**, or email the code maintainers:
 
+***[hello.drumscript@gmail.com](hello.drumscript@gmail.com)***
 
 ---
 

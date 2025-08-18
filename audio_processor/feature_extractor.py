@@ -4,8 +4,8 @@
 This module will extract relevant features from audio segments for drum classification.
 """
 
-import librosa
 import numpy as np
+import librosa
 import os
 import soundfile
 import math # Added for math.floor to calculate EXPECTED_N_FRAMES
@@ -32,68 +32,54 @@ if EXPECTED_N_FRAMES < 1:
 TOTAL_FEATURES_PER_FRAME = 20 + 1 + 1 + 1 + 1
 
 
+# Drumscript/audio_processor/feature_extractor.py
+
 def extract_features(audio_segment: np.ndarray, sr: int) -> np.ndarray:
     """
-    Extracts various audio features from a short audio segment,
-    ensuring a consistent number of frames (timesteps) for CNN input.
+    Extracts a combined feature vector from an audio segment.
 
-    Args:
-        audio_segment (np.ndarray): A short audio time series segment containing a drum hit.
-                                    Expected to be already padded/truncated to EXPECTED_AUDIO_LEN_SAMPLES
-                                    if called from a pipeline that handles this (like model_trainer).
-        sr (int): The sample rate of the audio segment.
+    Features:
+    - 40 MFCCs (mean over time)
+    - Spectral Centroid (mean)
+    - Spectral Rolloff (mean)
+    - RMS Energy (mean)
 
-    Returns:
-        np.ndarray: A 2D NumPy array containing the stacked and shaped features.
-                    Shape: (EXPECTED_N_FRAMES, total_number_of_features_per_frame).
+    Returns a single, flattened numpy array.
     """
     if audio_segment.size == 0:
-        # Return zeros for all features if segment is empty to maintain consistent shape.
-        return np.zeros((EXPECTED_N_FRAMES, TOTAL_FEATURES_PER_FRAME))
+        return None # Return None if segment is empty
 
+    try:
+        # 1. MFCCs
+        mfccs = librosa.feature.mfcc(y=audio_segment, sr=sr, n_mfcc=40)
+        mfccs_mean = np.mean(mfccs, axis=1)
 
-    # --- Feature Extraction without time-averaging ---
+        # 2. Spectral Centroid
+        spectral_centroid = librosa.feature.spectral_centroid(y=audio_segment, sr=sr)
+        spectral_centroid_mean = np.mean(spectral_centroid)
 
-    # MFCCs (Mel-frequency cepstral coefficients)
-    # n_mfcc=20 is standard. librosa returns (n_mfcc, n_frames). Transpose to (n_frames, n_mfcc).
-    mfccs = librosa.feature.mfcc(y=audio_segment, sr=sr, n_mfcc=20, n_fft=N_FFT, hop_length=HOP_LENGTH)
-    mfccs = mfccs.T # Shape: (n_frames, n_mfcc)
+        # 3. Spectral Rolloff
+        spectral_rolloff = librosa.feature.spectral_rolloff(y=audio_segment, sr=sr)
+        spectral_rolloff_mean = np.mean(spectral_rolloff)
 
-    # Spectral Centroid
-    spectral_centroids = librosa.feature.spectral_centroid(y=audio_segment, sr=sr, n_fft=N_FFT, hop_length=HOP_LENGTH)[0]
-    spectral_centroids = spectral_centroids.reshape(-1, 1) # Shape: (n_frames, 1)
+        # 4. RMS Energy
+        rms = librosa.feature.rms(y=audio_segment)
+        rms_mean = np.mean(rms)
 
-    # Spectral Rolloff
-    spectral_rolloff = librosa.feature.spectral_rolloff(y=audio_segment, sr=sr, n_fft=N_FFT, hop_length=HOP_LENGTH)[0]
-    spectral_rolloff = spectral_rolloff.reshape(-1, 1) # Shape: (n_frames, 1)
+        # 5. Combine all features into a single vector
+        combined_features = np.hstack([
+            mfccs_mean,
+            spectral_centroid_mean,
+            spectral_rolloff_mean,
+            rms_mean
+        ])
 
-    # Zero-Crossing Rate
-    zcr = librosa.feature.zero_crossing_rate(y=audio_segment, hop_length=HOP_LENGTH)[0]
-    zcr = zcr.reshape(-1, 1) # Shape: (n_frames, 1)
-
-    # RMS Energy
-    rms = librosa.feature.rms(y=audio_segment, hop_length=HOP_LENGTH)[0]
-    rms = rms.reshape(-1, 1) # Shape: (n_frames, 1)
-
-    # Combine all features. Ensure all have the same number of frames.
-    # librosa.feature functions with same n_fft/hop_length will produce same n_frames.
-    combined_features = np.hstack((mfccs, spectral_centroids, spectral_rolloff, zcr, rms))
-
-    # --- Pad/Truncate features to EXPECTED_N_FRAMES ---
-    # This is crucial for consistent input shape to the CNN
-    current_n_frames = combined_features.shape[0]
-
-    if current_n_frames < EXPECTED_N_FRAMES:
-        padding_frames = EXPECTED_N_FRAMES - current_n_frames
-        # Pad with zeros along the frames dimension, maintaining the feature dimension size
-        padded_features = np.pad(combined_features, ((0, padding_frames), (0, 0)), mode='constant')
-        return padded_features
-    elif current_n_frames > EXPECTED_N_FRAMES:
-        # Truncate if too many frames
-        truncated_features = combined_features[:EXPECTED_N_FRAMES, :]
-        return truncated_features
-    else:
         return combined_features
+
+    except Exception as e:
+        print(f"Error extracting features from segment: {e}")
+        return None
+
 
 
 if __name__ == "__main__":
