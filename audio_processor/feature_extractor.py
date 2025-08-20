@@ -27,9 +27,14 @@ EXPECTED_N_FRAMES = 1 + (EXPECTED_AUDIO_LEN_SAMPLES - N_FFT) // HOP_LENGTH
 if EXPECTED_N_FRAMES < 1:
     EXPECTED_N_FRAMES = 1 # Ensure at least one frame, even for very short segments
 
-# Define TOTAL_FEATURES_PER_FRAME globally so it's accessible in __main__ block
-# Number of MFCCs + Spectral Centroid + Spectral Rolloff + ZCR + RMS = 20 + 1 + 1 + 1 + 1 = 24
-TOTAL_FEATURES_PER_FRAME = 20 + 1 + 1 + 1 + 1
+# previous Define TOTAL_FEATURES_PER_FRAME globally so it's accessible in __main__ block
+# previous Number of MFCCs + Spectral Centroid + Spectral Rolloff + ZCR + RMS = 20 + 1 + 1 + 1 + 1 = 24
+# previous TOTAL_FEATURES_PER_FRAME = 20 + 1 + 1 + 1 + 1
+
+# current TOTAL_FEATURES_PER_FRAME = 
+# current TOTAL_FEATRUES_PER_FRAME = 40 (MFCCs) + 1 (Centroid) + 1 (Rolloff) + 1 (RMS) + 1 (Zero-Crossing Rate) = 44
+
+TOTAL_FEATURES_PER_FRAME = 40 + 1 + 1 + 1 + 1 # 44
 
 
 # Drumscript/audio_processor/feature_extractor.py
@@ -51,7 +56,8 @@ def extract_features(audio_segment: np.ndarray, sr: int) -> np.ndarray:
 
     try:
         # 1. MFCCs
-        mfccs = librosa.feature.mfcc(y=audio_segment, sr=sr, n_mfcc=40)
+        mfccs = librosa.feature.mfcc(y=audio_segment, sr=sr, n_mfcc=TOTAL_FEATURES_PER_FRAME) # ENSURE n_Mfcc = TOTAL_FEATURES_PER_FRAME, ensure hardcoded line ~37 above matches the number of features extracted.
+        # note - the number of features is not hard binded, ie you can define a subset, that is n_mfcc = 40
         mfccs_mean = np.mean(mfccs, axis=1)
 
         # 2. Spectral Centroid
