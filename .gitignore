@@ -138,3 +138,4 @@ package-build.md
 drum_classifier/training_log.txt
 troubleshooting.md
 # git_log.txt
+audio_processor/onset_detector__new3__TEMPO_DETECTION.py
