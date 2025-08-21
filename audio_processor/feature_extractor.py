@@ -139,6 +139,7 @@ if __name__ == "__main__":
                     features_array = extract_features(temp_audio_segment, sample_rate)
 
                     print(f"  Combined features shape: {features_array.shape}")
+                    print(f"  Combined features shape: {features_array}") # print the features_array in console for reviewing
                     print(f"  Expected features shape: ({EXPECTED_N_FRAMES}, {TOTAL_FEATURES_PER_FRAME})")
                     assert features_array.shape == (EXPECTED_N_FRAMES, TOTAL_FEATURES_PER_FRAME), "Output shape mismatch!"
                     
