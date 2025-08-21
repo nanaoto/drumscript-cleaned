@@ -31,10 +31,10 @@ if EXPECTED_N_FRAMES < 1:
 # previous Number of MFCCs + Spectral Centroid + Spectral Rolloff + ZCR + RMS = 20 + 1 + 1 + 1 + 1 = 24
 # previous TOTAL_FEATURES_PER_FRAME = 20 + 1 + 1 + 1 + 1
 
-# current TOTAL_FEATURES_PER_FRAME = 
-# current TOTAL_FEATRUES_PER_FRAME = 40 (MFCCs) + 1 (Centroid) + 1 (Rolloff) + 1 (RMS) + 1 (Zero-Crossing Rate) = 44
-
-TOTAL_FEATURES_PER_FRAME = 40 + 1 + 1 + 1 + 1 # 44
+# current TOTAL_FEATURES_PER_FRAME = 40 (MFCCs) + 1 (Zero-Crossing Rate) = 41
+N_MFCC = 41
+TOTAL_FEATURES_PER_FRAME = N_MFCC + 3 # TOTAL_FEATURES_PER_FRAME = 44
+# THE SCRIP WILL ADD 3 FEATURES [1 (Centroid) + 1 (Rolloff) + 1 (RMS)] SO IN TOTAL WE HAVE 44 FEATURES
 
 
 # Drumscript/audio_processor/feature_extractor.py
@@ -56,7 +56,7 @@ def extract_features(audio_segment: np.ndarray, sr: int) -> np.ndarray:
 
     try:
         # 1. MFCCs
-        mfccs = librosa.feature.mfcc(y=audio_segment, sr=sr, n_mfcc=TOTAL_FEATURES_PER_FRAME) # ENSURE n_Mfcc = TOTAL_FEATURES_PER_FRAME, ensure hardcoded line ~37 above matches the number of features extracted.
+        mfccs = librosa.feature.mfcc(y=audio_segment, sr=sr, n_mfcc=N_MFCC) # ENSURE n_Mfcc = TOTAL_FEATURES_PER_FRAME, ensure hardcoded line ~37 above matches the number of features extracted.
         # note - the number of features is not hard binded, ie you can define a subset, that is n_mfcc = 40
         mfccs_mean = np.mean(mfccs, axis=1)
 
@@ -124,7 +124,8 @@ if __name__ == '__main__':
             assert features.shape == (TOTAL_FEATURES_PER_FRAME,), "Output shape mismatch!"
             print("  ✅ SUCCESS: The output shape is correct!")
             
-            print(f"\n  Sample of features (first 5): {features[:5]}")
+            #print(f"\n  Sample of features (first 5): {features[:5]}")
+            print(f"\n  All features): {features}")
         else:
             print("  ❌ FAILURE: Feature extraction returned None.")
 
