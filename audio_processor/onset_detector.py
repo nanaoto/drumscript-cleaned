@@ -8,6 +8,7 @@ import librosa
 import numpy as np
 import os # Import os for path manipulation
 import soundfile
+from audio_loader import load_audio, normalise_audio
 
 def detect_onsets(audio_data: np.ndarray, sr: int) -> list[float]:
     if audio_data.size == 0:
@@ -26,20 +27,20 @@ if __name__ == "__main__":
         # if running this script directly and 'audio_processor' is not in the Python path.
         # However, for 'python -m' style execution, 'from audio_processor.audio_loader import ...' is usually correct.
 
-
         sr = 44100 # Target sample rate for processing
 
-        # --- Path to your actual drum recording (test.wav/test.mp3) ---
+        # --- Path to your actual drum recording/audio (test.wav/test.mp3) ---
         # This dynamic path calculation should correctly point to DRUMSCRIPT/test_audio/test.wav
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
-        # print(current_script_dir)
-        # Go up two levels from audio_processor/onset_detector.py to the outer DRUMSCRIPT/ folder
-        project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-        # print(project_root)
+        print(f'current_script_dir: {current_script_dir}')
+        # Go up one level from audio_processor/onset_detector.py to the outer DRUMSCRIPT/ folder
+        project_root = os.path.abspath(os.path.join(current_script_dir, '..'))
+        print(f'project_root: {project_root}')
         # Construct the path to test.mp3/test.wav within the 'test_audio' directory
         #test_mp3_path = os.path.join(project_root, "DrumScript/test_audio", "test.mp3") # Change .mp3 to .wav if using WAV, or other audio format
-        test_audio_path = os.path.join(project_root, "DrumScript/test_audio", "test.wav") # Change .wav to .mp3 if using MP3, or other audio format
-        from audio_processor.audio_loader import load_audio, normalise_audio
+        test_audio_path = os.path.join(project_root, "test_audio", "test.wav") # Change .wav to .mp3 if using MP3, or other audio format
+        print(f'test_audio_path: {test_audio_path}')
+
         
 
 
