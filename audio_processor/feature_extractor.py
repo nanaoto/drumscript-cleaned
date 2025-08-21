@@ -13,9 +13,10 @@ import math # Added for math.floor to calculate EXPECTED_N_FRAMES
 # --- Configuration (Mirroring model_trainer.py for consistency) ---
 # These should ideally be imported from a central 'constants.py'
 # but for now, we'll keep them consistent by defining them here.
-SAMPLE_RATE = 22050
-SEGMENT_LENGTH_SECONDS = 0.2
-N_FFT = 1024
+SAMPLE_RATE = 44100
+SEGMENT_LENGTH_SECONDS = 0.2 # SEGMENT_LENGTH_SECONDS is the duration of the audio snapshot the script analyses at one time. To give two extremes. If you increase it (e.g., to 1.0): You would capture several drum hits in one fingerprint, making it impossible for the model to know which sound happened when, if you decrease it (e.g., to 0.05): You might only capture the initial "click" of the drum hit and miss the sound's body, losing important information. 0.2 is (seconds) is usually good-enough for drum events, ie kick+snare
+N_FFT = 1024 # N_FFT is the 'size of the window for the fourier transform" N_FFT = 1024 (Frequency Resolution)
+# This is the size of the analysis window for the Fourier Transform, which breaks the sound down into its constituent frequencies. A larger N_FFT gives you a more detailed picture of which frequencies are present but a less precise idea of exactly when they happened. If you increase it (e.g., to 2048): You get a very precise frequency analysis, which could help distinguish two very similar-sounding cymbals. If you decrease it (e.g., to 512): You get better timing precision but a "blurrier" picture of the frequencies.
 HOP_LENGTH = 512
 
 # Calculate the expected number of frames (timesteps) per segment
@@ -100,12 +101,12 @@ if __name__ == '__main__':
         test_audio_path = os.path.join(script_dir, '..', 'test_audio', 'test.wav')
         
         print(f"Attempting to load: {test_audio_path}")
-        audio_data, sample_rate = load_audio(test_audio_path, sr=22050)
+        audio_data, sample_rate = load_audio(test_audio_path, sr=SAMPLE_RATE)
         
         print(f"Loaded audio: Shape={audio_data.shape}, Sample Rate={sample_rate}")
 
         # Create a single, short segment for testing (e.g., 200ms)
-        segment_duration_ms = 200
+        segment_duration_ms = 160
         segment_samples = int(sample_rate * (segment_duration_ms / 1000.0))
         test_segment = audio_data[sample_rate : sample_rate + segment_samples] # Take a slice 1s in
 
