@@ -10,7 +10,6 @@ import os # Import os for path manipulation
 import soundfile
 
 def detect_onsets(audio_data: np.ndarray, sr: int) -> list[float]:
-    # ... (Your existing detect_onsets function code remains unchanged) ...
     if audio_data.size == 0:
         return []
 
@@ -26,18 +25,21 @@ if __name__ == "__main__":
         # Note: You might need 'from DrumScript.audio_processor.audio_loader import ...'
         # if running this script directly and 'audio_processor' is not in the Python path.
         # However, for 'python -m' style execution, 'from audio_processor.audio_loader import ...' is usually correct.
-        from audio_processor.audio_loader import load_audio, normalise_audio
 
-        sr = 22050 # Target sample rate for processing
+
+        sr = 44100 # Target sample rate for processing
 
         # --- Path to your actual drum recording (test.wav/test.mp3) ---
         # This dynamic path calculation should correctly point to DRUMSCRIPT/test_audio/test.wav
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
+        # print(current_script_dir)
         # Go up two levels from audio_processor/onset_detector.py to the outer DRUMSCRIPT/ folder
         project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
+        # print(project_root)
         # Construct the path to test.mp3/test.wav within the 'test_audio' directory
         #test_mp3_path = os.path.join(project_root, "DrumScript/test_audio", "test.mp3") # Change .mp3 to .wav if using WAV, or other audio format
         test_audio_path = os.path.join(project_root, "DrumScript/test_audio", "test.wav") # Change .wav to .mp3 if using MP3, or other audio format
+        from audio_processor.audio_loader import load_audio, normalise_audio
         
 
 
