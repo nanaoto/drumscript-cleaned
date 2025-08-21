@@ -87,77 +87,49 @@ def extract_features(audio_segment: np.ndarray, sr: int) -> np.ndarray:
         return None
 
 
+if __name__ == '__main__':
+    # This block is for testing the feature_extractor.py script directly.
+    import os
+    from audio_loader import load_audio
 
-if __name__ == "__main__":
-    print("Running feature_extractor.py example with test.mp3/test.wav...")
+    print("--- Running feature_extractor.py example ---")
+
+    # Use a relative path to make the script more portable
     try:
-        from audio_loader import load_audio, normalise_audio
-        from onset_detector import detect_onsets
-
-        # --- Path to your actual drum recording (test.wav) ---
-        current_script_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-        test_audio_path = os.path.join(project_root, "DrumScript/test_audio", "test.wav")
-
+        # Construct path to the test audio file
+        script_dir = os.path.dirname(__file__)
+        test_audio_path = os.path.join(script_dir, '..', 'test_audio', 'test.wav')
+        
         print(f"Attempting to load: {test_audio_path}")
-        audio_data, sample_rate = load_audio(test_audio_path, sr=SAMPLE_RATE) # Use global SAMPLE_RATE
-        normalised_audio = normalise_audio(audio_data)
-        print(f"Loaded audio: Shape={normalised_audio.shape}, Sample Rate={sample_rate}, Duration={len(normalised_audio)/sample_rate:.2f} seconds")
+        audio_data, sample_rate = load_audio(test_audio_path, sr=22050)
+        
+        print(f"Loaded audio: Shape={audio_data.shape}, Sample Rate={sample_rate}")
 
-        print("\nDetecting onsets...")
-        onsets = detect_onsets(normalised_audio, sample_rate)
-        print(f"Detected {len(onsets)} onsets.")
+        # Create a single, short segment for testing (e.g., 200ms)
+        segment_duration_ms = 200
+        segment_samples = int(sample_rate * (segment_duration_ms / 1000.0))
+        test_segment = audio_data[sample_rate : sample_rate + segment_samples] # Take a slice 1s in
 
-        if onsets:
-            num_onsets_to_process = min(len(onsets), 5)
-            for i in range(num_onsets_to_process):
-                onset_time = onsets[i]
-                onset_sample = int(onset_time * sample_rate)
-                segment_length_samples_target = EXPECTED_AUDIO_LEN_SAMPLES # Use the consistent length
-
-                # Define the segment: from onset, with padding/truncation
-                segment_start = onset_sample
-                segment_end = onset_sample + segment_length_samples_target
-
-                # Ensure segment extraction handles boundaries and then pass to extract_features
-                # For this example, we'll extract the segment and then let extract_features pad/truncate if needed
-                # For consistency with model_trainer, it's better to ensure the raw audio segment itself
-                # passed to extract_features is already the EXPECTED_AUDIO_LEN_SAMPLES.
-                # Here, we'll demonstrate that by padding the *input* audio_segment to extract_features
-                
-                temp_audio_segment = normalised_audio[segment_start:segment_end]
-                
-                # Manual padding/truncation to ensure the segment fed to extract_features has correct length
-                if len(temp_audio_segment) < segment_length_samples_target:
-                    padding = segment_length_samples_target - len(temp_audio_segment)
-                    temp_audio_segment = np.pad(temp_audio_segment, (0, padding), mode='constant')
-                elif len(temp_audio_segment) > segment_length_samples_target:
-                    temp_audio_segment = temp_audio_segment[:segment_length_samples_target]
-
-                print(f"\n--- Features for Onset {i+1} (at {onset_time:.2f}s) ---")
-                if temp_audio_segment.size > 0:
-                    features_array = extract_features(temp_audio_segment, sample_rate)
-
-                    print(f"  Combined features shape: {features_array.shape}")
-                    print(f"  Combined features shape: {features_array}") # print the features_array in console for reviewing
-                    print(f"  Expected features shape: ({EXPECTED_N_FRAMES}, {TOTAL_FEATURES_PER_FRAME})")
-                    assert features_array.shape == (EXPECTED_N_FRAMES, TOTAL_FEATURES_PER_FRAME), "Output shape mismatch!"
-                    
-                    # You can print statistics of the features_array here if desired
-                    # For example, print mean of first few feature dimensions
-                    print(f"  Mean of first 5 feature dimensions: {np.mean(features_array[:, :5], axis=0)}")
-                else:
-                    print(f"  Onset {i+1} segment is empty, cannot extract features.")
+        print(f"\n--- Testing extract_features function ---")
+        
+        # Call the new, correct function
+        features = extract_features(test_segment, sample_rate)
+        
+        if features is not None:
+            print(f"  ✅ Function executed successfully.")
+            print(f"  Combined features shape: {features.shape}")
+            print(f"  Expected features shape: ({TOTAL_FEATURES_PER_FRAME},)")
+            
+            # --- VERIFICATION ---
+            assert features.shape == (TOTAL_FEATURES_PER_FRAME,), "Output shape mismatch!"
+            print("  ✅ SUCCESS: The output shape is correct!")
+            
+            print(f"\n  Sample of features (first 5): {features[:5]}")
         else:
-            print("No onsets detected in the audio, cannot extract features.")
+            print("  ❌ FAILURE: Feature extraction returned None.")
 
-    except FileNotFoundError:
-        print(f"\nERROR: The audio file '{test_audio_path}' was not found.")
-        print("Please ensure you have placed 'test.mp3/test.wav' inside your 'DrumScript/test_audio/' directory.")
     except Exception as e:
         print(f"\nAn unexpected error occurred during the example execution: {e}")
-        import traceback
-        traceback.print_exc()
 
-    print("\nfeature_extractor.py example finished.")
+    print("\n--- feature_extractor.py example finished ---")
     print("\n-----------------------------------------------------")
