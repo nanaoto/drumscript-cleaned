@@ -16,6 +16,32 @@ def detect_onsets(audio_data: np.ndarray, sr: int) -> list[float]:
     onset_times = librosa.frames_to_time(onset_env, sr=sr)
     return onset_times.tolist()
 
+
+#-------NEW FCT AUTOMATIC TEMPO DETECTION---- TO BE REVIEWED/.TESTED
+
+def calculate_tempo_from_onsets(onset_times: np.ndarray, sr: int) -> float:
+    """
+    Estimates the tempo (BPM) from a list of onset timestamps.
+
+    Args:
+        onset_times (np.ndarray): An array of timestamps for detected onsets.
+        sr (int): The sample rate of the audio.
+
+    Returns:
+        float: The estimated tempo in beats per minute (BPM).
+    """
+    if len(onset_times) < 2:
+        return 120.0 # Return a default tempo if not enough onsets are found
+
+    # Estimate tempo from the onset timestamps
+    tempo = librosa.beat.tempo(onset_envelope=None, sr=sr, onset_events=onset_times)
+    
+    # librosa.beat.tempo returns an array, we'll take the first (most likely) value
+    return tempo[0]
+
+#----------------------------------------------------------------------
+
+
 if __name__ == "__main__":
     print("Running onset_detector.py example with test.wav/test.mp3...")
     try:
