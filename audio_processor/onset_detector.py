@@ -19,7 +19,7 @@ def detect_onsets(audio_data: np.ndarray, sr: int) -> list[float]:
 if __name__ == "__main__":
     print("Running onset_detector.py example with test.wav/test.mp3...")
     try:
-        
+
         # Import necessary modules from your package
         # Note: You might need 'from DrumScript.audio_processor.audio_loader import ...'
         # if running this script directly and 'audio_processor' is not in the Python path.
@@ -53,11 +53,15 @@ if __name__ == "__main__":
 
         if onsets:
             # Print the first few detected onsets for verification
-            print("\nFirst 10 detected onsets (seconds):")
-            for i, onset_time in enumerate(onsets[:10]):
+            #print("\nFirst 10 detected onsets (seconds):")
+            #for i, onset_time in enumerate(onsets[:10]):
+            #if len(onsets) > 10:
+             #   print(f"  ...and {len(onsets) - 10} more onsets.")
+            
+            # Print * (ALL) detected onsets for now
+            print(f"\n All {len(onsets)} detected onsets (seconds):")
+            for i, onset_time in enumerate(onsets):
                 print(f"  Onset {i+1}: {onset_time:.2f}s")
-            if len(onsets) > 10:
-                print(f"  ...and {len(onsets) - 10} more onsets.")
         else:
             print("No onsets detected in test.mp3/test.wav.")
 
