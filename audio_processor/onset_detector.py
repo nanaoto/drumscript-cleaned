@@ -51,7 +51,9 @@ if __name__ == "__main__":
         # if running this script directly and 'audio_processor' is not in the Python path.
         # However, for 'python -m' style execution, 'from audio_processor.audio_loader import ...' is usually correct.
 
-        sr = 44100 # Target sample rate for processing
+        #sr = 44100 # Target sample rate for processing
+        sr = 44100*1.5 # Target sample rate for processing
+        print(f'sample_rate=sr={sr}') # Print current sample rate applied
 
         # --- Path to your actual drum recording/audio (test.wav/test.mp3) ---
         # This dynamic path calculation should correctly point to DRUMSCRIPT/test_audio/test.wav
