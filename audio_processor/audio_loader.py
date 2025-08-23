@@ -1,10 +1,9 @@
-#.audio_processor/audio_loader.py
+# DrumScript/audio_processor/audio_loader.py
 
 """
 This module will handle loading and basic normalisation of audio files. It also offers automatic playback of the audio once loaded.
 """
 
-# DrumScript/audio_processor/audio_loader.py
 
 import librosa
 import numpy as np
@@ -89,6 +88,7 @@ if __name__ == "__main__":
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
         audio, sr = load_audio(actual_drum_recording_path, sr=44100)
+
         print(f"Loaded audio: Shape={audio.shape}, Sample Rate={sr}, Duration={len(audio)/sr:.2f} seconds")
 
         # Test normalise_audio
