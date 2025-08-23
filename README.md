@@ -250,14 +250,29 @@ For questions or support, please **[open an issue](https://github.com/victoria-m
  - #### **What is `peak normalisation`? 🔊**
 
     **Peak normalisation** is a process that adjusts the volume of an audio file so that its loudest point—the "peak"—is set to a maximum level (in this case, 1.0) without clipping or distortion.
-   
+    >
     Think of it like adjusting the brightness of a group photo. The software finds the single brightest spot in the entire image and adjusts the overall brightness of the photo so that this one spot is pure white. Every other part of the image is brightened by the same amount, preserving all the relative differences in light and shadow.
+    >
     Peak normalisation does the same for audio. It finds the loudest drum hit in the entire track and boosts the volume of the whole file so that this single hit is at maximum loudness. The relative volume between all other hits is perfectly preserved. 
 
- - #### Why is `peak_normalisation` important in `DrumScript`?
+ - #### Why is `peak_normalisation` used in `DrumScript`?
 
     Applying peak normalisation is a crucial step for preparing data for a machine learning model. By ensuring that every audio file has a consistent peak volume, it prevents the model from being biased by how loud or quiet the original recording was.
-    This forces the model to learn the **timbre** and **texture** of a snare drum, for example, rather than just learning that "loud sounds are snare drums." It ensures the model makes classifications based on the sonic character of the instruments, not their recording levels.
+    >
+    This forces the model to learn the **timbre** and **texture** of a snare drum, for example, rather than just learning that "loud sounds are snare drums." It ensures the model makes classifications based on the sonic character of the instruments, n
+ - ####  Why normalise imported audio at all? 
+
+    The reason we normalise is to make the machine learning model robust to differences in recording volume.
+    >
+    Without normalisation, our model might learn that a snare drum is a sound with a high RMS (loudness) value. But what happens when it analyses a track that was recorded very quietly? The snare's RMS value might be lower than a kick drum's from a different, louder recording. The model would get confused.
+    >
+    By normalising every audio file, we remove the variable of recording level. This forces the model to learn the true sonic fingerprint of each drum—its timbre, its frequency content, its attack—which remains consistent regardless of how loud it is.
+
+ - ####  Don't you lose detail by normalising imported audio?
+
+    The peak normalsation used in our `audio_loader.py` script is a **linear process**. This means it multiplies **every single audio sample** by the **exact same constant value**. It's the digital equivalent of turning a volume knob.
+    >
+    **Analogy:** Think of it like changing the brightness of a photograph. You make every pixel brighter by the same amount, but you don't lose any detail. The shapes, textures, and relative differences between light and dark areas remain perfectly intact. The photo is just brighter. The same is true for your audio. The "shape" of the sound wave—which determines all the features like `MFCCs`, `spectral centroid`, and `rhythm`—is completely preserved. The audio is just made louder or quieter to fit a standard level.
 
 ---
 
