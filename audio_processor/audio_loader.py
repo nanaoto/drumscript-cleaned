@@ -70,8 +70,8 @@ if __name__ == "__main__":
 
     # --- Path to your actual drum recording ---
     # Assuming your recording is in a 'data' folder at the project root
-    # e.g., DRUMSCRIPT/data/my_drum_recording.mp3
-    # e.g., DRUMSCRIPT/data/my_drum_recording.wav
+    # e.g., 'DrumScript/test_audio/test.wav'
+    # e.g., 'DrumScript/test_audio/test.mp3'
     #
     # To correctly get the path:
     # 1. Get the directory of the current script (audio_loader.py)
@@ -83,13 +83,12 @@ if __name__ == "__main__":
     actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav") # Change .wav to .mp3 if using MP3, or other audio format
 
     # --- IMPORTANT: Create a 'data' folder in your project root and place an MP3/WAV there ---
-    # For testing, you MUST have 'my_drum_recording.mp3' (or .wav) inside 'DRUMSCRIPT/data/'
-    # For testing, you MUST have 'my_drum_recording.mp3' (or .wav) inside 'DRUMSCRIPT/data/'
+    # For testing, you must have 'my_drum_recording.mp3' (or .wav) inside 'DrumScript/test_audio/'
     # before running this example.
 
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
-        audio, sr = load_audio(actual_drum_recording_path, sr=22050)
+        audio, sr = load_audio(actual_drum_recording_path, sr=44100)
         print(f"Loaded audio: Shape={audio.shape}, Sample Rate={sr}, Duration={len(audio)/sr:.2f} seconds")
 
         # Test normalise_audio
