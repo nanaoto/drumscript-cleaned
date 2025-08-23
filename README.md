@@ -274,6 +274,27 @@ For questions or support, please **[open an issue](https://github.com/victoria-m
     >
     **Analogy:** Think of it like changing the brightness of a photograph. You make every pixel brighter by the same amount, but you don't lose any detail. The shapes, textures, and relative differences between light and dark areas remain perfectly intact. The photo is just brighter. The same is true for your audio. The "shape" of the sound wave—which determines all the features like `MFCCs`, `spectral centroid`, and `rhythm`—is completely preserved. The audio is just made louder or quieter to fit a standard level.
 
+ - #### What is is `hop_length`? 
+
+      **`hop_length`** is the **number of audio samples** between the **start of one analysis window** and the **start of the nex**t.
+
+      When `librosa` analyses audio, it doesn't look at the whole file at once; instead, it slides a small ***window* across the audio** and **analyses each chunk.** The `hop_length` is the distance that window ***hops*** forward for each step. 
+      >
+      * A **large** `hop_length` means fewer, bigger jumps, which is faster but less detailed.
+      >
+      * A **small** `hop_length` means more, smaller steps with more overlap, giving a much more detailed and precise analysis of time.
+      >
+      For example, if the `hop_length` has a value of **`256`**, this corresponds to **256 audio samples**. We can translate this into seconds with the designated `SAMPLE_RATE(sr)` in `DrumScript`: **`sample_rate=44100`**
+      >
+      $$\frac{256 \text{ samples}}{44100 \text{ samples per second}} \approx 0.0058 \text{ seconds (or 5.8 milliseconds)}$$
+      >
+      If, however, we were to change **`sample_rate=22050`**, this would become:
+      >
+      $$\frac{256 \text{ samples}}{22050 \text{ samples per second}} \approx 0.01160 \text{ seconds (or 11.6 milliseconds)}$$
+      >
+
+      
+
 ---
 
 <!--END -->

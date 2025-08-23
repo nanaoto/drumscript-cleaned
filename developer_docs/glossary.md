@@ -1,5 +1,5 @@
 <!--date_created: weds-25-june-2025-->
-<!--date_updated: thurs-10-july-2025-->
+<!--date_updated: sat-23-aug-2025-->
 
 # **`DrumScript`: Glossary of Terms**
 
@@ -74,7 +74,9 @@
   * **Example:** 
 > If `hop_length=512`, the window (or `object_event`) moves **512 samples to the right** for the next analysis, overlapping with the previous window (`object_event`).
 
-  * Playing around with the `hop_length` is often crucial for finding the right split of intervals in a given audio sample. 
+  * Playing around with the `hop_length` is often crucial for finding the right split of intervals in a given audio sample.  The `hop_length` also depends on the `SAMPLE_RATE` defined  (in the case of `DrumScript` we have chosen a `sample_rate=441000` across the library)
+
+> There us a **more detailed explanation of `hop_length`**, along with calculated examples in the **`[README.md](../README.md)**
 
 ## `n_fft`
 
