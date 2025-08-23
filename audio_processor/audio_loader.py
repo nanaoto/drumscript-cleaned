@@ -86,10 +86,12 @@ def estimate_tempo_from_onsets(onset_times: np.ndarray, sr: int) -> float:
 # --- adding function for Automatic Tempo Detection:
 
 
+# In your audio_loader.py, replace your estimate_tempo function with this one:
+
 def estimate_tempo(audio_data, sr):
     """
-    Estimates the tempo (BPM) of an audio signal using a high-resolution
-    onset detection method suitable for fast and complex drumming.
+    Estimates the tempo (BPM) of an audio signal using a filtered median
+    of inter-onset intervals, which is robust for fast, complex drumming.
     """
     if audio_data.size == 0:
         return 0.0
@@ -99,27 +101,39 @@ def estimate_tempo(audio_data, sr):
     onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
 
     if len(onset_times) < 2:
-        return 120.0
+        return 120.0 # Return a default tempo if not enough onsets
 
-    # Step 2: Estimate tempo from the onsets using librosa's robust algorithm
-    # This requires an up-to-date version of librosa.
-    tempo = librosa.beat.tempo(onset_envelope=None, sr=sr, onset_events=onset_times)
+    # Step 2: Calculate inter-onset intervals (time between hits)
+    iois = np.diff(onset_times)
+
+    # Step 3: Filter out intervals that are too short to be the main beat.
+    # This prevents fast hi-hats or ghost notes from skewing the result.
+    # We'll assume a maximum plausible tempo of 240 BPM (0.25s per beat).
+    min_ioi = 60.0 / 240.0
+    filtered_iois = iois[iois > min_ioi]
+
+    if len(filtered_iois) == 0:
+        # If all intervals were filtered out (e.g., an extremely fast drum roll),
+        # fall back to the unfiltered median to provide a guess.
+        tempo = 60.0 / np.median(iois)
+    else:
+        # Calculate tempo from the median of the plausible intervals.
+        tempo = 60.0 / np.median(filtered_iois)
     
-    # The function returns an array, so we take the first and most likely tempo
-    return tempo[0]
-
+    return tempo
 
 if __name__ == "__main__":
     # We need the threading module to listen for input in the background
     import threading
+
 
     print("Running audio_loader.py example with actual MP3/WAV...")
 
     # --- Path to your audio file ---
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
-    #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test1__147bpm.mp3")
+    #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
+    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test7__205bpm.mp3")
 
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
