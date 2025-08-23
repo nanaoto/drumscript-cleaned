@@ -63,6 +63,21 @@ def normalise_audio(audio_data: np.ndarray) -> np.ndarray:
     return normalised_data
 
 
+# --- adding function for Automatic Tempo Detection:
+
+def estimate_tempo(audio_data, sample_rate):
+    """
+    Estimates the tempo (BPM) of an audio signal.
+    """
+    if audio_data.size == 0:
+        return 0.0
+
+    # Corrected line: uses 'sr' keyword and the 'sample_rate' variable
+    tempo, _ = librosa.beat.beat_track(y=audio_data, sr=sample_rate)
+    print(f'tempo: {tempo}')
+    return tempo
+
+
 if __name__ == "__main__":
     #print("Running audio_loader.py example with actual MP3/WAV...")
     print("Running audio_loader.py example with actual MP3/WAV...")
@@ -89,18 +104,23 @@ if __name__ == "__main__":
         print(f"Attempting to load: {actual_drum_recording_path}")
         audio, sr = load_audio(actual_drum_recording_path, sr=44100)
 
-        print(f"Loaded audio: Shape={audio.shape}, Sample Rate={sr}, Duration={len(audio)/sr:.2f} seconds")
+        print(f"Loaded audio: Shape={audio.shape}, Sample Rate={sr}, Duration={len(audio)/sr:.4f} seconds")
 
         # Test normalise_audio
         original_max = np.max(np.abs(audio))
         normalised_audio = normalise_audio(audio)
         normalised_max = np.max(np.abs(normalised_audio))
-        print(f"Original max amplitude: {original_max:.4f}")
-        print(f"Normalised max amplitude: {normalised_max:.4f}")
+        bpm = estimate_tempo(normalised_audio, sample_rate=sr)
+        # The following lines provide a summary of the audio processing and tempo analysis performed by the script on your audio
+        print(f"Original max amplitude: {original_max:.4f}") # This line tells you the loudness of the single loudest point in the original audio file, exactly as it was loaded from disk.
+        print(f"Normalised max amplitude: {normalised_max:.4f}") # This line shows you the maximum amplitude of the audio after the peak normalisation process has been applied.
+        print(f"Estimated Tempo: {bpm} BPM") # This is the output of the def estimate_tempo function. It's the script's best guess for the overall tempo of the audio track, measured in BPM (Beats Per Minute).
+        
         assert np.isclose(normalised_max, 1.0) or np.isclose(normalised_max, 0.0), "Normalisation failed!"
 
         # Playback the loaded and normalised audio:
         print("\nPlaying loaded (and normalised) audio...")
+
         # sd.play takes the audio array and sample rate
         sd.play(normalised_audio, sr)
         # sd.wait() blocks until playback is complete
@@ -112,7 +132,6 @@ if __name__ == "__main__":
         # output_wav_path = "output_test_audio.wav"
         # sf.write(output_wav_path, normalised_audio, sr)
         # print(f"Saved loaded audio to: {output_wav_path}")
-        # time.sleep(1) # Give it a moment before cleaning up if playing
 
     except FileNotFoundError:
         # ... (your existing error handling) ...
@@ -126,4 +145,5 @@ if __name__ == "__main__":
         print(f"\nAn unexpected error occurred during the example execution: {e}")
 
     print("audio_loader.py example finished.")
+
 
