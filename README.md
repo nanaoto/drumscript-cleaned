@@ -1,7 +1,7 @@
 ## **DrumScript**
 
 <!--date_created: sun-15-june-2025-->
-<!--date_updated: mon-18july-2025-->
+<!--date_updated: sat-23-july-2025-->
 
 > **Python 3.12.10**
 
@@ -238,8 +238,26 @@ For questions or support, please **[open an issue](https://github.com/victoria-m
 
     Utility functions like `drumscript.install_ffmpeg()` are wrappers that serve **as an aid**. They are helpers than **run on every OS**.  However, usage is **optional**.Users are welcome to follow **[manual instructions for installing `FFmpeg`](#how-to-install-ffmpeg-manually)** provided.
     >
-    **Note for `Linux`/`macOS`**: For `sudo` commands, `shell=True` is often used. It's important to be cautious, ie with `shell=True` as it can introduce security risks if the command being executed includes untrusted input. In this case, the commands are **hardcoded** and **safe**.
+    **Note for `Linux`/`macOS`**: For `sudo` commands, `shell=True` is often used. It's important to be cautious, ie with `shell=True` as it can introduce security risks if the command being executed includes untrusted input. In this case, the commands are **hardcoded** and **safe*
 
+ - #### What normalisation is applied to loaded audio?
+
+    Audio is loaded into `DrumScript` using the `.audio_processor/audio_loader.py` script. The `audio_loader.py` script applies **peak normalisation** to the audio after loading it. The process is straightforward and happens in two main steps inside the `load_audio` function:
+>  1.  First, the script loads the audio file and converts it to a mono signal.
+> 2.  It then immediately passes this audio data to the `normalise_audio` function, which uses the `librosa.util.normalise(y)` command to perform the normalisation.
+
+
+ - #### **What is `peak normalisation`? 🔊**
+
+    **Peak normalisation** is a process that adjusts the volume of an audio file so that its loudest point—the "peak"—is set to a maximum level (in this case, 1.0) without clipping or distortion.
+   
+    Think of it like adjusting the brightness of a group photo. The software finds the single brightest spot in the entire image and adjusts the overall brightness of the photo so that this one spot is pure white. Every other part of the image is brightened by the same amount, preserving all the relative differences in light and shadow.
+    Peak normalisation does the same for audio. It finds the loudest drum hit in the entire track and boosts the volume of the whole file so that this single hit is at maximum loudness. The relative volume between all other hits is perfectly preserved. 
+
+ - #### Why is `peak_normalisation` important in `DrumScript`?
+
+    Applying peak normalisation is a crucial step for preparing data for a machine learning model. By ensuring that every audio file has a consistent peak volume, it prevents the model from being biased by how loud or quiet the original recording was.
+    This forces the model to learn the **timbre** and **texture** of a snare drum, for example, rather than just learning that "loud sounds are snare drums." It ensures the model makes classifications based on the sonic character of the instruments, not their recording levels.
 
 ---
 
