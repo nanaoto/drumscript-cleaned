@@ -251,7 +251,7 @@ if __name__ == "__main__":
     input_audio_paths = [
         "../test_audio/test.wav", # Corrected path to point to DrumScript/test_audio/test.wav
         # If you also have test.mp3 and want to include it later, it would be:
-        # "../test_audio/test.mp3",
+         #"../test_audio/test.mp3",
     ]
 #if __name__ == "__main__":
     # --- IMPORTANT: Replace with your actual paths for testing ---
