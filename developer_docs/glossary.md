@@ -76,7 +76,7 @@
 
   * Playing around with the `hop_length` is often crucial for finding the right split of intervals in a given audio sample.  The `hop_length` also depends on the `SAMPLE_RATE` defined  (in the case of `DrumScript` we have chosen a `sample_rate=441000` across the library)
 
-> There us a **more detailed explanation of `hop_length`**, along with calculated examples in the **[README.md](../README.md)**
+> There us a **more detailed explanation of `hop_length`**, along with calculated examples in the **[README.md](../README.md#faqs)**
 
 ## `n_fft`
 
