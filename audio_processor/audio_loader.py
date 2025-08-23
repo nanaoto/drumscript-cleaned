@@ -62,20 +62,52 @@ def normalise_audio(audio_data: np.ndarray) -> np.ndarray:
         normalised_data = audio_data # Already zero or empty
     return normalised_data
 
+# --- REFINED TEMPO DETECTION LOGIC ---
+
+def detect_onsets_high_resolution(audio_data: np.ndarray, sr: int) -> np.ndarray:
+    """
+    Detects onsets with a higher temporal resolution suitable for fast music.
+    """
+    # hop_length=256 is smaller than the default 512, giving us more detail.
+    onset_frames = librosa.onset.onset_detect(y=audio_data, sr=sr, units='frames', hop_length=256)
+    return librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
+
+def estimate_tempo_from_onsets(onset_times: np.ndarray, sr: int) -> float:
+    """
+    Estimates tempo from a list of onset timestamps.
+    """
+    if len(onset_times) < 2:
+        return 120.0 # Default tempo
+        
+    tempo = librosa.beat.tempo(onset_envelope=None, sr=sr, onset_events=onset_times)
+    return tempo[0]
+
 
 # --- adding function for Automatic Tempo Detection:
 
-def estimate_tempo(audio_data, sample_rate):
+
+def estimate_tempo(audio_data, sr):
     """
-    Estimates the tempo (BPM) of an audio signal.
+    Estimates the tempo (BPM) of an audio signal using a high-resolution
+    onset detection method suitable for fast and complex drumming.
     """
     if audio_data.size == 0:
         return 0.0
 
-    # Corrected line: uses 'sr' keyword and the 'sample_rate' variable
-    tempo, _ = librosa.beat.beat_track(y=audio_data, sr=sample_rate)
-    print(f'tempo: {tempo}')
-    return tempo
+    # Step 1: Detect onsets with a higher temporal resolution
+    onset_frames = librosa.onset.onset_detect(y=audio_data, sr=sr, units='frames', hop_length=256)
+    onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
+
+    if len(onset_times) < 2:
+        return 120.0
+
+    # Step 2: Estimate tempo from the onsets using librosa's robust algorithm
+    # This requires an up-to-date version of librosa.
+    tempo = librosa.beat.tempo(onset_envelope=None, sr=sr, onset_events=onset_times)
+    
+    # The function returns an array, so we take the first and most likely tempo
+    return tempo[0]
+
 
 if __name__ == "__main__":
     # We need the threading module to listen for input in the background
@@ -87,7 +119,7 @@ if __name__ == "__main__":
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
     #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
-    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test7__205bpm.mp3")
+    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test1__147bpm.mp3")
 
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
@@ -101,8 +133,9 @@ if __name__ == "__main__":
         assert np.isclose(normalised_max, 1.0) or np.isclose(normalised_max, 0.0), "Normalisation failed!"
 
         # Estimate the tempo
-        bpm = estimate_tempo(normalised_audio, sample_rate=sr) # Note: this should be sr, not sample_rate
-        print(f"Estimated Tempo: {bpm[0]:.2f} BPM")
+        bpm = estimate_tempo(normalised_audio, sr=sr) # Note: this should be sr, not sample_rate
+        #print(f"Estimated Tempo: {bpm[0]:.2f} BPM")
+        print(f"Estimated Tempo: {bpm:.2f} BPM")
 
         # --- NEW KEYBOARD INTERRUPT LOGIC ---
 
