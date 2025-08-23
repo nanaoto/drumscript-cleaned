@@ -30,7 +30,7 @@ def load_audio(file_path: str, sr: int = None) -> tuple[np.ndarray, int]:
         Exception: For other errors during audio loading (e.g., corrupted file).
     """
     try:
-        audio_data, sample_rate = librosa.load(file_path, sr=sr) # The liborsa.load_audio() fct handles wide variety of audio formats, including .mp3, .wav, .flac, .ogg, etc.
+        audio_data, sample_rate = librosa.load(file_path, sr=sr) # The librosa.load_audio() fct handles wide variety of audio formats, including .mp3, .wav, .flac, .ogg, etc.
         return audio_data, sample_rate
     except FileNotFoundError:
         print(f"Error: Audio file not found at {file_path}")
@@ -86,7 +86,8 @@ if __name__ == "__main__":
     # --- Path to your audio file ---
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
+    #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
+    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test7__205bpm.mp3")
 
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
