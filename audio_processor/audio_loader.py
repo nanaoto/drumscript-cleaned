@@ -77,73 +77,56 @@ def estimate_tempo(audio_data, sample_rate):
     print(f'tempo: {tempo}')
     return tempo
 
-
 if __name__ == "__main__":
-    #print("Running audio_loader.py example with actual MP3/WAV...")
+    # We need the threading module to listen for input in the background
+    import threading
+
     print("Running audio_loader.py example with actual MP3/WAV...")
 
-    # --- Path to your actual drum recording ---
-    # Assuming your recording is in a 'data' folder at the project root
-    # e.g., 'DrumScript/test_audio/test.wav'
-    # e.g., 'DrumScript/test_audio/test.mp3'
-    #
-    # To correctly get the path:
-    # 1. Get the directory of the current script (audio_loader.py)
+    # --- Path to your audio file ---
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
-    # 2. Go up to the project root (from audio_processor to DRUMSCRIPT)
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-    # 3. Construct the path to your audio file
-    #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.mp3") # Change .mp3 to .wav if using WAV, or other audio format
-    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav") # Change .wav to .mp3 if using MP3, or other audio format
-
-    # --- IMPORTANT: Create a 'data' folder in your project root and place an MP3/WAV there ---
-    # For testing, you must have 'my_drum_recording.mp3' (or .wav) inside 'DrumScript/test_audio/'
-    # before running this example.
+    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
 
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
         audio, sr = load_audio(actual_drum_recording_path, sr=44100)
+        
+        print(f"Loaded audio: Shape={audio.shape}, Sample Rate={sr}, Duration={len(audio)/sr:.2f} seconds")
 
-        print(f"Loaded audio: Shape={audio.shape}, Sample Rate={sr}, Duration={len(audio)/sr:.4f} seconds")
-
-        # Test normalise_audio
-        original_max = np.max(np.abs(audio))
+        # Normalize and check the audio
         normalised_audio = normalise_audio(audio)
         normalised_max = np.max(np.abs(normalised_audio))
-        bpm = estimate_tempo(normalised_audio, sample_rate=sr)
-        # The following lines provide a summary of the audio processing and tempo analysis performed by the script on your audio
-        print(f"Original max amplitude: {original_max:.4f}") # This line tells you the loudness of the single loudest point in the original audio file, exactly as it was loaded from disk.
-        print(f"Normalised max amplitude: {normalised_max:.4f}") # This line shows you the maximum amplitude of the audio after the peak normalisation process has been applied.
-        print(f"Estimated Tempo: {bpm} BPM") # This is the output of the def estimate_tempo function. It's the script's best guess for the overall tempo of the audio track, measured in BPM (Beats Per Minute).
-        
         assert np.isclose(normalised_max, 1.0) or np.isclose(normalised_max, 0.0), "Normalisation failed!"
 
-        # Playback the loaded and normalised audio:
-        print("\nPlaying loaded (and normalised) audio...")
+        # Estimate the tempo
+        bpm = estimate_tempo(normalised_audio, sample_rate=sr) # Note: this should be sr, not sample_rate
+        print(f"Estimated Tempo: {bpm[0]:.2f} BPM")
 
-        # sd.play takes the audio array and sample rate
+        # --- NEW KEYBOARD INTERRUPT LOGIC ---
+
+        # 1. Define a function that waits for Enter and then stops the audio
+        def stop_playback_on_enter():
+            input("Audio is playing. Press Enter to stop...\n")
+            sd.stop()
+            print("Playback stopped by user.")
+
+        # 2. Start the audio playback (this is non-blocking)
+        print("\nPlaying loaded (and normalised) audio...")
         sd.play(normalised_audio, sr)
-        # sd.wait() blocks until playback is complete
+
+        # 3. Start the listener function in a background thread
+        #    'daemon=True' means the thread won't prevent the script from exiting
+        listener_thread = threading.Thread(target=stop_playback_on_enter, daemon=True)
+        listener_thread.start()
+
+        # 4. Wait for playback to finish (either naturally or by being stopped)
         sd.wait()
+        
         print("Audio playback finished.")
 
-        # Optional: You can also save the loaded audio to a new file to verify
-        # import soundfile as sf
-        # output_wav_path = "output_test_audio.wav"
-        # sf.write(output_wav_path, normalised_audio, sr)
-        # print(f"Saved loaded audio to: {output_wav_path}")
-
-    except FileNotFoundError:
-        # ... (your existing error handling) ...
-        print(f"\nERROR: The audio file '{actual_drum_recording_path}' was not found.")
-        print("Please ensure you have placed an audio file (e.g., 'test.mp3' or '.wav') inside test_audio/.")
-    except ImportError:
-        print("\nERROR: Required audio backend libraries might be missing.")
-        print("Ensure 'soundfile' and 'pydub' are installed via 'uv pip install -r requirements.txt'.")
-        print("For MP3, 'ffmpeg' must also be installed on your system and accessible in PATH.")
     except Exception as e:
         print(f"\nAn unexpected error occurred during the example execution: {e}")
 
     print("audio_loader.py example finished.")
-
-
+    print("\n-----------------------------------------------------")
