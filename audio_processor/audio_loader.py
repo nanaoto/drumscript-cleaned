@@ -61,28 +61,29 @@ def normalise_audio(audio_data: np.ndarray) -> np.ndarray:
     else:
         normalised_data = audio_data # Already zero or empty
     return normalised_data
+"""
 
-# --- REFINED TEMPO DETECTION LOGIC ---
+# --- REFINED TEMPO DETECTION LOGIC --- MIGHT REMOVE LATER
 
 def detect_onsets_high_resolution(audio_data: np.ndarray, sr: int) -> np.ndarray:
-    """
-    Detects onsets with a higher temporal resolution suitable for fast music.
-    """
-    # hop_length=256 is smaller than the default 512, giving us more detail.
-    onset_frames = librosa.onset.onset_detect(y=audio_data, sr=sr, units='frames', hop_length=256)
-    return librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
+"""
+#Detects onsets with a higher temporal resolution suitable for fast music.
+"""
+# hop_length=256 is smaller than the default 512, giving us more detail.
+onset_frames = librosa.onset.onset_detect(y=audio_data, sr=sr, units='frames', hop_length=256)
+return librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
 
 def estimate_tempo_from_onsets(onset_times: np.ndarray, sr: int) -> float:
-    """
-    Estimates tempo from a list of onset timestamps.
-    """
-    if len(onset_times) < 2:
-        #return 120.0 # Default tempo
-        return print('\n Not enough onsets to detect tempo automatically!')
-        
-    tempo = librosa.beat.tempo(onset_envelope=None, sr=sr, onset_events=onset_times)
-    return tempo[0]
-
+"""
+#Estimates tempo from a list of onset timestamps.
+"""
+if len(onset_times) < 2:
+    #return 120.0 # Default tempo
+    return print('\n Not enough onsets to detect tempo automatically!')
+    
+tempo = librosa.beat.tempo(onset_envelope=None, sr=sr, onset_events=onset_times)
+return tempo[0]
+"""
 
 # --- adding function for Automatic Tempo Detection:
 
