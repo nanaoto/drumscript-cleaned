@@ -122,7 +122,7 @@ notation_generator/constants__new.py
 
 
 
-# temp files
+# temp files (review periodically)
 
 
 logs.txt
@@ -137,5 +137,6 @@ model_trainer1_cnn.txt
 package-build.md
 drum_classifier/training_log.txt
 troubleshooting.md
-# git_log.txt
-audio_processor/onset_detector__new3__TEMPO_DETECTION.py
+audio_processor/onset_detector__new3__TEMPO_DETECTION.py 
+audio_processor/audio_loader__LIBROSA__BEAT_BEAT_TRACK__tempo_detection__test__mon25aug2025.py
+audio_processor/audio_loader__BEST_MEDIAN_AUTO_TEMPO_DETECTION__mon25aug2025.py
