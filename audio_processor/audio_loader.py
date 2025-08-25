@@ -10,7 +10,7 @@ import numpy as np
 import os
 import sounddevice as sd
 import time # for pausing listenable audio
-
+a
 def load_audio(file_path: str, sr: int = None) -> tuple[np.ndarray, int]:
     """
     Loads an audio file and optionally resamples it.
@@ -86,7 +86,6 @@ def estimate_tempo_from_onsets(onset_times: np.ndarray, sr: int) -> float:
 # --- adding function for Automatic Tempo Detection:
 
 
-# In your audio_loader.py, replace your estimate_tempo function with this one:
 
 def estimate_tempo(audio_data, sr):
     """
