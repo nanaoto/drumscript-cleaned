@@ -104,7 +104,8 @@ def estimate_tempo(audio_data, sr):
     onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
 
     if len(onset_times) < 2:
-        return 120.0
+        #return 120.0
+        return print(f'Not enough intervals to detect tempo automatically!')
 
     # Step 2: Calculate inter-onset intervals (unchanged)
     iois = np.diff(onset_times)
@@ -123,7 +124,7 @@ def estimate_tempo(audio_data, sr):
     # Step 5: Score the peaks based on musical plausibility
     # We create a "prior" that prefers tempos around 120 BPM.
     peak_iois = bin_centers[peaks]
-    candidate_tempos = 60 / peak_iois
+    candidate_tempos = 100 / peak_iois
     
     # A Gaussian curve centered at 120 BPM with a standard deviation of 30
     # This gives higher scores to more "typical" tempos.
@@ -167,7 +168,7 @@ if __name__ == "__main__":
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
     #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
-    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test2__150bpm.mp3")
+    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test3__177bpm.mp3")
 
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
