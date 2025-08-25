@@ -10,6 +10,9 @@ import numpy as np
 import os
 import sounddevice as sd
 import time # for pausing listenable audio
+import scipy
+from scipy.signal import find_peaks
+from scipy.stats import norm
 
 def load_audio(file_path: str, sr: int = None) -> tuple[np.ndarray, int]:
     """
@@ -86,35 +89,62 @@ return tempo[0]
 """
 
 # --- adding function for Automatic Tempo Detection:
-
-
+# --- replacing beat detection algorithm
 
 def estimate_tempo(audio_data, sr):
     """
-    Estimates the tempo (BPM) of an audio signal using a filtered median
-    of inter-onset intervals, which is robust for fast, complex drumming.
+    Estimates tempo by finding the most musically plausible peak in the
+    histogram of inter-onset intervals.
     """
     if audio_data.size == 0:
         return 0.0
 
-    # Step 1: Detect onsets with a higher temporal resolution
+    # Step 1: Detect onsets with high resolution (unchanged)
     onset_frames = librosa.onset.onset_detect(y=audio_data, sr=sr, units='frames', hop_length=256)
     onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
-    print(f'onset frames: {onset_frames}')
-    print(f'onset times: {onset_times}')
 
     if len(onset_times) < 2:
-        #return 120.0 # Return a default tempo if not enough onsets
-        return print('\n Not enough onsets to detect tempo automatically!')
+        return 120.0
 
-    # Step 2: Calculate inter-onset intervals (time between hits)
+    # Step 2: Calculate inter-onset intervals (unchanged)
     iois = np.diff(onset_times)
+
+    # Step 3: Create a histogram of the IOIs to find common rhythmic values
+    # We use a large number of bins for high precision.
+    counts, bin_edges = np.histogram(iois, bins=100, range=(0.0, 2.0))
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+    # Step 4: Find the prominent peaks in the histogram
+    peaks, _ = find_peaks(counts, height=np.max(counts)*0.1) # Find peaks > 10% of max height
+
+    if len(peaks) == 0:
+        return 60.0 / np.median(iois) # Fallback to simple median if no peaks found
+
+    # Step 5: Score the peaks based on musical plausibility
+    # We create a "prior" that prefers tempos around 120 BPM.
+    peak_iois = bin_centers[peaks]
+    candidate_tempos = 60.0 / peak_iois
+    
+    # A Gaussian curve centered at 120 BPM with a standard deviation of 30
+    # This gives higher scores to more "typical" tempos.
+    prior = norm(loc=120, scale=30)
+    scores = prior.pdf(candidate_tempos)
+
+    # Step 6: Choose the best tempo
+    # The best tempo is the candidate with the highest score.
+    best_tempo = candidate_tempos[np.argmax(scores)]
+    
+    return best_tempo
+
+
 
     # Step 3: Filter out intervals that are too short to be the main beat.
     # This prevents fast hi-hats or ghost notes from skewing the result.
     # We'll assume a maximum plausible tempo of 240 BPM (0.25s per beat).
     min_ioi = 60.0 / 240.0
     filtered_iois = iois[iois > min_ioi]
+    print(f'min_ioi: {min_ioi}')
+    print(f'filtered_ioi: {min_ioi}')
 
     if len(filtered_iois) == 0:
         # If all intervals were filtered out (e.g., an extremely fast drum roll),
