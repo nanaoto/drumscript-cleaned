@@ -77,7 +77,8 @@ def estimate_tempo_from_onsets(onset_times: np.ndarray, sr: int) -> float:
     Estimates tempo from a list of onset timestamps.
     """
     if len(onset_times) < 2:
-        return 120.0 # Default tempo
+        #return 120.0 # Default tempo
+        return print('\n Not enough onsets to detect tempo automatically!')
         
     tempo = librosa.beat.tempo(onset_envelope=None, sr=sr, onset_events=onset_times)
     return tempo[0]
