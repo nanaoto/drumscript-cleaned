@@ -10,7 +10,7 @@ import numpy as np
 import os
 import sounddevice as sd
 import time # for pausing listenable audio
-a
+
 def load_audio(file_path: str, sr: int = None) -> tuple[np.ndarray, int]:
     """
     Loads an audio file and optionally resamples it.
