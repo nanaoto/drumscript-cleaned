@@ -98,6 +98,8 @@ def estimate_tempo(audio_data, sr):
     # Step 1: Detect onsets with a higher temporal resolution
     onset_frames = librosa.onset.onset_detect(y=audio_data, sr=sr, units='frames', hop_length=256)
     onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
+    print(f'onset frames: {onset_frames}')
+    print(f'onset times: {onset_times}')
 
     if len(onset_times) < 2:
         #return 120.0 # Return a default tempo if not enough onsets
