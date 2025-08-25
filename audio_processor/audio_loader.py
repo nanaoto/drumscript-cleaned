@@ -123,11 +123,11 @@ def estimate_tempo(audio_data, sr):
     # Step 5: Score the peaks based on musical plausibility
     # We create a "prior" that prefers tempos around 120 BPM.
     peak_iois = bin_centers[peaks]
-    candidate_tempos = 100 / peak_iois
+    candidate_tempos = 60 / peak_iois
     
     # A Gaussian curve centered at 120 BPM with a standard deviation of 30
     # This gives higher scores to more "typical" tempos.
-    prior = norm(loc=120, scale=30)
+    prior = norm(loc=130, scale=40)
     scores = prior.pdf(candidate_tempos)
 
     # Step 6: Choose the best tempo
