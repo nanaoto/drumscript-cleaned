@@ -64,8 +64,8 @@ if __name__ == "__main__":
         print(f'project_root: {project_root}')
 
         # Construct the path to test.mp3/test.wav within the 'test_audio' directory
-        #test_mp3_path = os.path.join(project_root, "DrumScript/test_audio", "test.mp3") # Change .mp3 to .wav if using WAV, or other audio format
-        test_audio_path = os.path.join(project_root, "test_audio", "test.wav") # Change .wav to .mp3 if using MP3, or other audio format
+        test_audio_path = os.path.join(project_root, "test_audio", "test.mp3") # Change .mp3 to .wav if using WAV, or other audio format
+        #test_audio_path = os.path.join(project_root, "test_audio", "test.wav") # Change .wav to .mp3 if using MP3, or other audio format
         print(f'test_audio_path: {test_audio_path}')
         print(f"Attempting to load: {test_audio_path}")
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         print(f"Loaded audio: Shape={normalised_audio.shape}, Sample Rate={sample_rate}, Duration={len(normalised_audio)/sample_rate:.2f} seconds")
 
         # Detect onsets from test.mp3/test.wav
-        print("\nDetecting onsets from test.mp3/test.wav...")
+        #print("\nDetecting onsets from test.mp3/test.wav...")
         onsets = detect_onsets(normalised_audio, sample_rate)
         print(f"Detected {len(onsets)} onsets.")
 
