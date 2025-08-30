@@ -1,10 +1,12 @@
 # DrumScript/drum_classifier/model_trainer.py
+# 1D CNN
 
 import os
-import numpy as np
+
 import joblib
 import json
 import pandas as pd
+import numpy as np
 import librosa
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -19,10 +21,13 @@ from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras.metrics import BinaryAccuracy, Precision, Recall, AUC
 from tqdm import tqdm # For progress bars during feature extraction
 
+from drum_model import create_drum_model # drum_classifier/drum_model.py
+
 
 # --- Configuration ---
-SAMPLE_RATE = 22050
-SEGMENT_LENGTH_SECONDS = 0.2
+# SAMPLE_RATE = 22050
+SAMPLE_RATE = 44100 # Amended to reflect constants in other scripts
+SEGMENT_LENGTH_SECONDS = 0.2 ## NEED TO CROSS-CHECK WITH OTHER SCRIPTS FOR CONSISTENCY
 # Define all UNIQUE drum types that we expect to classify.
 # This must match the ALL_DRUM_TYPES list used in process_enst_dataset.py
 ALL_DRUM_TYPES = sorted(['kick', 'snare', 'hi-hat', 'crash', 'ride', 'tom']) # Ensure this matches process_enst_dataset.py
@@ -104,6 +109,7 @@ def prepare_dataset(data_dir: str, sr: int, segment_length_seconds: float):
     X_reshaped_for_scaler = X.reshape(original_X_shape[0], -1)
 
     scaler = StandardScaler()
+    
     X_scaled = scaler.fit_transform(X_reshaped_for_scaler)
 
     # Reshape X back for the CNN: (num_samples, time_steps, n_mfcc)
@@ -126,6 +132,11 @@ def create_cnn_model(input_shape, num_classes):
     Returns:
         tf.keras.Model: The compiled Keras CNN model.
     """
+    # Determine input shape and number of classes from your data
+    # X_train.shape[1] is the number of features (should be 43)
+    # y_train.shape[1] is the number of drum types
+    # input_shape = X_train.shape[1]
+
     model = Sequential([
         # First Convolutional Block
         Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=input_shape),
@@ -166,9 +177,16 @@ def train_and_evaluate_model(data_dir: str, model_save_path: str, scaler_save_pa
     print(f"Train set size: {X_train.shape[0]} samples, Test set size: {X_test.shape[0]} samples.")
 
     # 3. Create and Compile Model
-    # Input shape for Conv1D should be (time_steps, n_mfccs)
-    input_shape = (X_train.shape[1], X_train.shape[2])
-    num_classes = y_train.shape[1] # Number of drum types/labels
+    # Input shape for Conv1D should be (time_steps, n_mfccs) (2D CNN)
+    # input_shape = (X_train.shape[1], X_train.shape[2])  (2D CNN)
+    # num_classes = y_train.shape[1] # Number of drum types/labels  (2D CNN)
+
+    # Determine input shape and number of classes from your data
+    # X_train.shape[1] is the number of features (should be 43)
+    # y_train.shape[1] is the number of drum types
+    input_shape = X_train.shape[1]
+    num_classes = y_train.shape[1]
+
 
     model = create_cnn_model(input_shape, num_classes)
     model.summary()
@@ -220,11 +238,13 @@ def train_and_evaluate_model(data_dir: str, model_save_path: str, scaler_save_pa
 if __name__ == "__main__":
     # Determine project root dynamically
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
+    print(f'current_script_dir:{current_script_dir}') # TEMP LINE: Included during build for testing
     # Go up one level from drum_classifier/ to DrumScript/
-    project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir))
+    project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir)) # TEMP LINE: Included during build for testing
+    print(f'project_root:{project_root}')
 
     # Define paths for data and saved models
-    data_directory = os.path.join(project_root, "training_data") # Points to 'training_data' which contains 'ENST_processed'
+    data_directory = os.path.join(project_root, "training_data") # Points to 'training_data' which contains 'ENST_processed's
     model_save_directory = os.path.join(project_root, "models")
     
     # Ensure 'models' directory exists
