@@ -156,7 +156,8 @@ def _estimate_tempo(audio_data, sr):
     onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
 
     if len(onset_times) < 2:
-        return 120.0 # Return a default tempo if not enough onsets
+        # return 120.0 # Return a default tempo if not enough onsets
+        return print(f'Not enough events detected in audio file provided: Automatic Tempo Detection is not possible')
 
     # Step 2: Calculate inter-onset intervals (time between hits)
     iois = np.diff(onset_times)
