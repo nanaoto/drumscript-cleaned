@@ -192,7 +192,7 @@ if __name__ == "__main__":
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
     #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
-    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test2__150bpm.mp3")
+    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","SCHAMMASCH-Split-My-Tongue.mp3")
 
 
     """ 
@@ -206,6 +206,13 @@ if __name__ == "__main__":
         5,test5__195bpm,195,191.41
         6,test6__198bpm,198,198.77*
         7,test7__205bpm,205,206.72Running audio_loader.py example with actual MP3/WAV...
+
+       SCHAMMASCH-Split-My-Tongue.mp3:
+       1. Estimated Tempo (estimate_tempo): 113.21 BPM
+       2. _Estimated Tempo (_estimate_tempo): 69.84 BPM
+
+       ACTUAL TEMPO: 104 BPM
+
     
     """
 
