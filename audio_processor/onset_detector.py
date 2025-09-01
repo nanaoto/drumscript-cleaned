@@ -51,8 +51,8 @@ if __name__ == "__main__":
         # if running this script directly and 'audio_processor' is not in the Python path.
         # However, for 'python -m' style execution, 'from audio_processor.audio_loader import ...' is usually correct.
 
-        #sr = 44100 # Target sample rate for processing
-        sr = 44100*1.5 # Target sample rate for processing
+        sr = 44100 # Target sample rate for processing
+        #sr = 44100*1.5 # Target sample rate for processing
         print(f'sample_rate=sr={sr}') # Print current sample rate applied
 
         # --- Path to your actual drum recording/audio (test.wav/test.mp3) ---
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         print(f'project_root: {project_root}')
 
         # Construct the path to test.mp3/test.wav within the 'test_audio' directory
-        test_audio_path = os.path.join(project_root, "test_audio", "test.mp3") # Change .mp3 to .wav if using WAV, or other audio format
+        test_audio_path = os.path.join(project_root, "test_audio", "SCHAMMASCH-Split-My-Tongue.mp3") # Change .mp3 to .wav if using WAV, or other audio format
         #test_audio_path = os.path.join(project_root, "test_audio", "test.wav") # Change .wav to .mp3 if using MP3, or other audio format
         print(f'test_audio_path: {test_audio_path}')
         print(f"Attempting to load: {test_audio_path}")
@@ -88,8 +88,8 @@ if __name__ == "__main__":
             
             # Print * (ALL) detected onsets for now
             print(f"\n All {len(onsets)} detected onsets (seconds):")
-            for i, onset_time in enumerate(onsets):
-                print(f"  Onset {i+1}: {onset_time:.2f}s")
+            #for i, onset_time in enumerate(onsets):
+             #   print(f"  Onset {i+1}: {onset_time:.2f}s")
         else:
             print("No onsets detected in test.mp3/test.wav.")
 
