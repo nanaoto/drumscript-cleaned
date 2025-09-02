@@ -178,32 +178,23 @@ def _estimate_tempo(audio_data, sr):
 
 # Tempo logic function 3: ------------------------------------------------------------------------
 
-
 def __estimate_tempo(audio_data, sr):
     """
     Estimates tempo by finding the tempo with the most energy in a global
-    tempogram, which is very robust for complex music.
+    tempogram. (Corrected to avoid 'inf' error).
     """
     if audio_data.size == 0:
         return 0.0
-
-    # 1. Calculate the onset strength envelope
     oenv = librosa.onset.onset_strength(y=audio_data, sr=sr, hop_length=256)
-    
-    # 2. Compute the tempogram from the onset envelope
     tempogram = librosa.feature.tempogram(onset_envelope=oenv, sr=sr, hop_length=256)
-    
-    # 3. Sum the energy across the time axis to get a static tempo "spectrum"
-    # This shows the total strength of each tempo over the whole song.
     tempo_spectrum = np.sum(tempogram, axis=1)
     
-    # 4. Find the index of the peak in the tempo spectrum
-    peak_idx = np.argmax(tempo_spectrum)
+    # --- FIX ---
+    # Ignore the first bin (which can be 'inf') when finding the peak
+    peak_idx = np.argmax(tempo_spectrum[1:]) + 1
     
-    # 5. Convert that index to a BPM value
     tempo_freqs = librosa.tempo_frequencies(tempogram.shape[0], sr=sr, hop_length=256)
     estimated_bpm = tempo_freqs[peak_idx]
-    
     return estimated_bpm
 
 # ------
