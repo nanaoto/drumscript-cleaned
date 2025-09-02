@@ -229,10 +229,10 @@ if __name__ == "__main__":
         1,test1__147bpm,147,147.66
         2,test2__150bpm,150,100.84*
         3,test3__177bpm,177,191.41*
-        4,test4__185bpm,185,159.01
+        4,test4__185bpm,185,159.01**
         5,test5__195bpm,195,191.41
-        6,test6__198bpm,198,198.77*
-        7,test7__205bpm,205,206.72Running audio_loader.py example with actual MP3/WAV...
+        6,test6__198bpm,198,198.77
+        7,test7__205bpm,205,206.72
 
        SCHAMMASCH-Split-My-Tongue.mp3:
        1. Estimated Tempo (estimate_tempo): 113.21 BPM
@@ -268,7 +268,7 @@ if __name__ == "__main__":
         # 3. Estimate the tempo (with __estimate_tempo function) (combination of 1 and librosa's tempogram)
         __bpm = __estimate_tempo(normalised_audio, sr=sr) # Note: this should be sr, not sample_rate
         #print(f"Estimated Tempo: {bpm[0]:.2f} BPM")
-        print(f"3. _Estimated Tempo (_estimate_tempo): {__bpm:.2f} BPM")
+        print(f"3. __Estimated Tempo (__estimate_tempo): {__bpm:.2f} BPM")
 
 
 
