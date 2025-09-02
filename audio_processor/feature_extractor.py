@@ -98,7 +98,8 @@ if __name__ == '__main__':
     try:
         # Construct path to the test audio file
         script_dir = os.path.dirname(__file__)
-        test_audio_path = os.path.join(script_dir, '..', 'test_audio', 'test.wav')
+        #test_audio_path = os.path.join(script_dir, '..', 'test_audio', 'test.wav')
+        test_audio_path = os.path.join(script_dir, '..', 'test_audio', 'SCHAMMASCH-Split-My-Tongue.mp3')
         
         print(f"Attempting to load: {test_audio_path}")
         audio_data, sample_rate = load_audio(test_audio_path, sr=SAMPLE_RATE)
