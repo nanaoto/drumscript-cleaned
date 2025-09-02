@@ -145,38 +145,36 @@ def estimate_tempo(audio_data, sr):
 
 def _estimate_tempo(audio_data, sr):
     """
-    Estimates the tempo (BPM) of an audio signal using a filtered median
-    of inter-onset intervals, which is robust for fast, complex drumming.
+    Estimates tempo using beat_track and then uses a tempogram as a
+    "sanity check" to correct for common triplet errors.
     """
     if audio_data.size == 0:
         return 0.0
-
-    # Step 1: Detect onsets with a higher temporal resolution
-    onset_frames = librosa.onset.onset_detect(y=audio_data, sr=sr, units='frames', hop_length=256)
-    onset_times = librosa.frames_to_time(onset_frames, sr=sr, hop_length=256)
-
-    if len(onset_times) < 2:
-        # return 120.0 # Return a default tempo if not enough onsets
-        return print(f'Not enough events detected in audio file provided: Automatic Tempo Detection is not possible')
-
-    # Step 2: Calculate inter-onset intervals (time between hits)
-    iois = np.diff(onset_times)
-
-    # Step 3: Filter out intervals that are too short to be the main beat.
-    # This prevents fast hi-hats or ghost notes from skewing the result.
-    # We'll assume a maximum plausible tempo of 240 BPM (0.25s per beat).
-    min_ioi = 60.0 / 240.0
-    filtered_iois = iois[iois > min_ioi]
-
-    if len(filtered_iois) == 0:
-        # If all intervals were filtered out (e.g., an extremely fast drum roll),
-        # fall back to the unfiltered median to provide a guess.
-        tempo = 60.0 / np.median(iois)
-    else:
-        # Calculate tempo from the median of the plausible intervals.
-        tempo = 60.0 / np.median(filtered_iois)
     
-    return tempo
+    # 1. Get initial tempo guess from beat_track
+    initial_tempo, _ = librosa.beat.beat_track(y=audio_data, sr=sr)
+    initial_tempo = initial_tempo[0]
+
+    # 2. Compute tempogram to find the strongest overall tempo pulse
+    oenv = librosa.onset.onset_strength(y=audio_data, sr=sr, hop_length=256)
+    tempogram = librosa.feature.tempogram(onset_envelope=oenv, sr=sr, hop_length=256)
+    
+    # Sum energy across time to get a static tempo "spectrum"
+    tempo_spectrum = np.sum(tempogram, axis=1)
+    
+    # Find the tempo with the most energy
+    strongest_peak_idx = np.argmax(tempo_spectrum)
+    tempo_freqs = librosa.tempo_frequencies(tempogram.shape[0], sr=sr, hop_length=256)
+    strongest_tempo = tempo_freqs[strongest_peak_idx]
+
+    # 3. The heuristic: If beat_track's guess is 2/3 of the strongest pulse,
+    #    it's likely a triplet error. We correct it to the stronger pulse.
+    #    (We check within a tolerance of +/- 5 BPM)
+    if np.isclose(initial_tempo, strongest_tempo * 2/3, atol=5):
+        return strongest_tempo
+    
+    # 4. Otherwise, we trust beat_track's initial guess.
+    return initial_tempo
 
 # ---------------------------------------------------------------------------------------------
 
