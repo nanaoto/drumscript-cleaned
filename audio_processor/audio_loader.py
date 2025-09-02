@@ -241,7 +241,7 @@ if __name__ == "__main__":
         
         print(f"Loaded audio: Shape={audio.shape}, Sample Rate={sr}, Duration={len(audio)/sr:.2f} seconds")
 
-        # Normalize and check the audio
+        # Normalise and check the audio
         normalised_audio = normalise_audio(audio)
         normalised_max = np.max(np.abs(normalised_audio))
         assert np.isclose(normalised_max, 1.0) or np.isclose(normalised_max, 0.0), "Normalisation failed!"
