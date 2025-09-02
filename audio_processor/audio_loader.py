@@ -176,8 +176,37 @@ def _estimate_tempo(audio_data, sr):
     # 4. Otherwise, we trust beat_track's initial guess.
     return initial_tempo
 
-# ---------------------------------------------------------------------------------------------
+# Tempo logic function 3: ------------------------------------------------------------------------
 
+
+def __estimate_tempo(audio_data, sr):
+    """
+    Estimates tempo by finding the tempo with the most energy in a global
+    tempogram, which is very robust for complex music.
+    """
+    if audio_data.size == 0:
+        return 0.0
+
+    # 1. Calculate the onset strength envelope
+    oenv = librosa.onset.onset_strength(y=audio_data, sr=sr, hop_length=256)
+    
+    # 2. Compute the tempogram from the onset envelope
+    tempogram = librosa.feature.tempogram(onset_envelope=oenv, sr=sr, hop_length=256)
+    
+    # 3. Sum the energy across the time axis to get a static tempo "spectrum"
+    # This shows the total strength of each tempo over the whole song.
+    tempo_spectrum = np.sum(tempogram, axis=1)
+    
+    # 4. Find the index of the peak in the tempo spectrum
+    peak_idx = np.argmax(tempo_spectrum)
+    
+    # 5. Convert that index to a BPM value
+    tempo_freqs = librosa.tempo_frequencies(tempogram.shape[0], sr=sr, hop_length=256)
+    estimated_bpm = tempo_freqs[peak_idx]
+    
+    return estimated_bpm
+
+# ------
 
 if __name__ == "__main__":
     # We need the threading module to listen for input in the background
@@ -207,7 +236,7 @@ if __name__ == "__main__":
 
        SCHAMMASCH-Split-My-Tongue.mp3:
        1. Estimated Tempo (estimate_tempo): 113.21 BPM
-       2. _Estimated Tempo (_estimate_tempo): 69.84 BPM
+       2. _Estimated Tempo (_estimate_tempo): 
 
        ACTUAL TEMPO: 104 BPM
 
@@ -235,6 +264,12 @@ if __name__ == "__main__":
         _bpm = _estimate_tempo(normalised_audio, sr=sr) # Note: this should be sr, not sample_rate
         #print(f"Estimated Tempo: {bpm[0]:.2f} BPM")
         print(f"2. _Estimated Tempo (_estimate_tempo): {_bpm:.2f} BPM")
+
+        # 3. Estimate the tempo (with __estimate_tempo function) (combination of 1 and librosa's tempogram)
+        __bpm = __estimate_tempo(normalised_audio, sr=sr) # Note: this should be sr, not sample_rate
+        #print(f"Estimated Tempo: {bpm[0]:.2f} BPM")
+        print(f"3. _Estimated Tempo (_estimate_tempo): {__bpm:.2f} BPM")
+
 
 
 
