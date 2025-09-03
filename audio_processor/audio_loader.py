@@ -212,26 +212,27 @@ def __estimate_tempo(audio_data, sr):
 ## --- NOTE: Review keep/discard/move to own script once finished using for testing of automatic tempo detection functions 
 # --- New function for visualising the tempo across audio (while testing) ------------------------
 
-
 def visualise_tempogram(audio_data, sr, hop_length=256, output_path="tempogram.png"):
     """
     Calculates and saves a tempogram visualization for the given audio.
     """
     oenv = librosa.onset.onset_strength(y=audio_data, sr=sr, hop_length=hop_length)
     tempogram = librosa.feature.tempogram(onset_envelope=oenv, sr=sr, hop_length=hop_length)
-    global_tempo = _estimate_tempo(audio_data, sr) # Use the best estimator for the line
+    global_tempo = __estimate_tempo(audio_data, sr)
+
     fig, ax = plt.subplots(figsize=(12, 6))
     librosa.display.specshow(tempogram, sr=sr, hop_length=hop_length, 
                              x_axis='time', y_axis='tempo', cmap='magma', ax=ax)
-    ax.axhline(global_tempo, color='w', linestyle='--', alpha=0.8, label=f'Global Tempo (Smart): {global_tempo:.2f} BPM')
+    ax.axhline(global_tempo, color='w', linestyle='--', alpha=0.8, label=f'Global Tempo: {global_tempo:.2f} BPM')
     ax.set_title('Tempogram')
     ax.legend(loc='upper right')
     fig.colorbar(ax.get_children()[0], ax=ax, label='Energy')
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    plt.close(fig)
-    print(f"✅ Tempogram saved to: {output_path}")
 
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close(fig) # Close the figure to free up memory
+    print(f"✅ Tempogram saved to: {output_path}")
+    
 # -----------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
