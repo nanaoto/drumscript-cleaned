@@ -11,8 +11,11 @@ import os
 import sounddevice as sd
 import time # for pausing listenable audio
 import scipy
+import threading
 from scipy.signal import find_peaks
 from scipy.stats import norm
+import matplotlib.pyplot as plt
+import librosa.display
 
 def load_audio(file_path: str, sr: int = None) -> tuple[np.ndarray, int]:
     """
@@ -180,24 +183,57 @@ def _estimate_tempo(audio_data, sr):
 
 def __estimate_tempo(audio_data, sr):
     """
-    Estimates tempo by finding the tempo with the most energy in a global
-    tempogram. (Corrected to avoid 'inf' error).
+    Estimates tempo from the tempogram, but restricted to a plausible range.
+    (Corrected to avoid INF and extreme BPM errors, ie 10500 BPM).
     """
     if audio_data.size == 0:
         return 0.0
     oenv = librosa.onset.onset_strength(y=audio_data, sr=sr, hop_length=256)
     tempogram = librosa.feature.tempogram(onset_envelope=oenv, sr=sr, hop_length=256)
     tempo_spectrum = np.sum(tempogram, axis=1)
-    
-    # --- FIX ---
-    # Ignore the first bin (which can be 'inf') when finding the peak
-    peak_idx = np.argmax(tempo_spectrum[1:]) + 1
-    
     tempo_freqs = librosa.tempo_frequencies(tempogram.shape[0], sr=sr, hop_length=256)
-    estimated_bpm = tempo_freqs[peak_idx]
+    
+    # --- FIX for extreme BPM error ---
+    # Create a mask to only consider tempos in a plausible musical range (e.g., 60-240 BPM)
+    plausible_tempos_mask = (tempo_freqs >= 60) & (tempo_freqs <= 240)
+    
+    # Find the index of the peak within the plausible range
+    plausible_spectrum = tempo_spectrum[plausible_tempos_mask]
+    if plausible_spectrum.size == 0:
+        return 120.0 # Return default if no energy in plausible range
+        
+    peak_idx_in_plausible_range = np.argmax(plausible_spectrum)
+    
+    # Convert that index back to a BPM value
+    plausible_tempo_freqs = tempo_freqs[plausible_tempos_mask]
+    estimated_bpm = plausible_tempo_freqs[peak_idx_in_plausible_range]
+    
     return estimated_bpm
+## --- NOTE: Review keep/discard/move to own script once finished using for testing of automatic tempo detection functions 
+# --- New function for visualising the tempo across audio (while testing) ------------------------
 
-# ------
+def visualise_tempogram(audio_data, sr, hop_length=256, output_path="tempogram.png"):
+    """
+    Calculates and saves a tempogram visualization for the given audio.
+    """
+    oenv = librosa.onset.onset_strength(y=audio_data, sr=sr, hop_length=hop_length)
+    tempogram = librosa.feature.tempogram(onset_envelope=oenv, sr=sr, hop_length=hop_length)
+    global_tempo = __estimate_tempo(audio_data, sr)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    librosa.display.specshow(tempogram, sr=sr, hop_length=hop_length, 
+                             x_axis='time', y_axis='tempo', cmap='magma', ax=ax)
+    ax.axhline(global_tempo, color='w', linestyle='--', alpha=0.8, label=f'Global Tempo: {global_tempo:.2f} BPM')
+    ax.set_title('Tempogram')
+    ax.legend(loc='upper right')
+    fig.colorbar(ax.get_children()[0], ax=ax, label='Energy')
+    plt.tight_layout()
+
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close(fig) # Close the figure to free up memory
+    print(f"✅ Tempogram saved to: {output_path}")
+    
+# -----------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     # We need the threading module to listen for input in the background
@@ -229,7 +265,7 @@ if __name__ == "__main__":
        1. Estimated Tempo (estimate_tempo): 113.21 BPM
        2. _Estimated Tempo (_estimate_tempo): 
 
-       ACTUAL TEMPO: 104 BPM
+       ACTUAL TEMPO: ~104 BPM
 
     
     """
@@ -246,27 +282,25 @@ if __name__ == "__main__":
         normalised_max = np.max(np.abs(normalised_audio))
         assert np.isclose(normalised_max, 1.0) or np.isclose(normalised_max, 0.0), "Normalisation failed!"
 
-        # 1. Estimate the tempo (with estimate_tempo function)
-        bpm = estimate_tempo(normalised_audio, sr=sr) # Note: this should be sr, not sample_rate
-        #print(f"Estimated Tempo: {bpm[0]:.2f} BPM")
-        print(f"1. Estimated Tempo (estimate_tempo): {bpm:.2f} BPM")
+       # Call all three tempo estimation functions
+        bpm1 = estimate_tempo(normalised_audio, sr) # Filtered Median, estimate_tempo function above
+        bpm2 = _estimate_tempo(normalised_audio, sr) # Smart Heuristic, _estimate_tempo function above
+        bpm3 = __estimate_tempo(normalised_audio, sr) # Tempogram-First, __estimate_tempo function above
 
-        # 2. Estimate the tempo (with estimate_tempo function)
-        _bpm = _estimate_tempo(normalised_audio, sr=sr) # Note: this should be sr, not sample_rate
-        #print(f"Estimated Tempo: {bpm[0]:.2f} BPM")
-        print(f"2. _Estimated Tempo (_estimate_tempo): {_bpm:.2f} BPM")
-
-        # 3. Estimate the tempo (with __estimate_tempo function) (combination of 1 and librosa's tempogram)
-        __bpm = __estimate_tempo(normalised_audio, sr=sr) # Note: this should be sr, not sample_rate
-        #print(f"Estimated Tempo: {bpm[0]:.2f} BPM")
-        print(f"3. __Estimated Tempo (__estimate_tempo): {__bpm:.2f} BPM")
+        print(f"       1. Estimated Tempo (Filtered Median): {bpm1:.2f} BPM")
+        print(f"       2. Estimated Tempo (Smart Heuristic): {bpm2:.2f} BPM")
+        print(f"       3. Estimated Tempo (Tempogram-First): {bpm3:.2f} BPM")
 
 
+        ## --- NOTE: Review keep/discard/move to own script once finished using for testing of automatic tempo detection functions 
+        # --- New function for visualising the tempo across audio (while testing) ------------------------
+        # --- Call the visualisation function ------------------------------------------------------------
+        print("\nGenerating and saving tempogram visualization...")
+        # We save the image in the same directory as the script
+        output_image_path = os.path.join(current_script_dir, "tempogram.png")
+        visualise_tempogram(normalised_audio, sr, output_path=output_image_path)
 
-
-
-        # --- NEW KEYBOARD INTERRUPT LOGIC ---
-
+        # --- Keyboard Interruption Logic -----------------------------------------------------------------
         # 1. Define a function that waits for Enter and then stops the audio
         def stop_playback_on_enter():
             input("Audio is playing. Press Enter to stop...\n")
@@ -286,6 +320,7 @@ if __name__ == "__main__":
         sd.wait()
         
         print("Audio playback finished.")
+        # --------------------------------------------------------------------------------------------------
 
     except Exception as e:
         print(f"\nAn unexpected error occurred during the example execution: {e}")
