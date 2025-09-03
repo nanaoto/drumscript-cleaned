@@ -49,7 +49,8 @@ dependencies = [
     "tensorflow",
     "tdqm",
     "scipy",
-    "ipykernel"
+    "ipykernel",
+    "matplotlib"
     #"lilypond",
     #"pytorch",
     #"tensorflow"
