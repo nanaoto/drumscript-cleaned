@@ -248,7 +248,7 @@ if __name__ == "__main__":
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
     #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
-    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test2__150bpm.mp3")
+    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test5__195bpm.mp3")
 
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
@@ -305,4 +305,4 @@ if __name__ == "__main__":
         print(f"\nAn unexpected error occurred during the example execution: {e}")
 
     print("audio_loader.py example finished.")
-    print("\n-----------------------------------------------------")
+    print("\n#--------------------------------------------------------------------------------------------------------------------------")
