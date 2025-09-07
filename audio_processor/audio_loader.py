@@ -12,6 +12,8 @@ import sounddevice as sd
 import time # for pausing listenable audio
 import scipy
 import threading
+import matplotlib
+matplotlib.use('Agg') # Set the backend to 'Agg' to prevent conflicts between plotting and threading
 from scipy.signal import find_peaks
 from scipy.stats import norm
 import matplotlib.pyplot as plt
