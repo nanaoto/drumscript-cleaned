@@ -249,7 +249,7 @@ if __name__ == "__main__":
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
     #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
-    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test5__195bpm.mp3")
+    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test7__205bpm.mp3")
 
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
@@ -275,7 +275,7 @@ if __name__ == "__main__":
         ## --- NOTE: Review keep/discard/move to own script once finished using for testing of automatic tempo detection functions 
         # --- New function for visualising the tempo across audio (while testing) ------------------------
         # --- Call the visualisation function ------------------------------------------------------------
-        print("\nGenerating and saving tempogram visualization...")
+        print("\nGenerating and saving tempogram visualisation...")
         # We save the image in the same directory as the script
         output_image_path = os.path.join(current_script_dir, "tempogram.png")
         visualise_tempogram(normalised_audio, sr, output_path=output_image_path)
