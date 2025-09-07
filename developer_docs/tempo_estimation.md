@@ -1,5 +1,10 @@
 ## How does the `estimate_tempo` function work in `audio_processor.audio_loader.py` script? 
 
+
+<!--date_created:sun-07-sept-2025-->
+<!--date_updated:sun-07-sept-2025-->
+
+---
 In simple terms, the **Tempo estimation function** works by creating a "poll" of all possible tempos in the song and picking the one with the most votes, making it very accurate for complex music.
 
 Here’s a more detailed breakdown of what it does and why it's so effective.
@@ -24,4 +29,8 @@ The reason this "Tempogram-First" method works so well on complex songs is becau
 
 The other methods were more "local." They looked at the time between individual drum hits and could be easily fooled by a tricky local rhythm (like a triplet feel) that wasn't representative of the whole song.
 
-This winning method, however, is like conducting a **city-wide census instead of a small neighborhood poll**. It analyzes the rhythmic evidence for all tempos across the entire track simultaneously. It can "see" that, while a triplet feel might be present in some sections, the evidence for the main 104 BPM pulse is much more consistent and powerful over the full duration of the song, and it correctly declares that one the winner. ✅
+This winning method, however, is like conducting a **city-wide census instead of a small neighborhood poll**. It analyzes the rhythmic evidence for all tempos across the entire track simultaneously. It can "see" that, while a triplet feel might be present in some sections, the evidence for the main 104 BPM pulse is much more consistent and powerful over the full duration of the song, and it correctly declares that one the winner. 
+
+---
+
+<!--END-->
