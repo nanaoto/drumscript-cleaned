@@ -241,6 +241,7 @@ if __name__ == "__main__":
     # We need the threading module to listen for input in the background
     import threading
 
+    print("\n#============================================================================================================")
 
     print("Running audio_loader.py example with actual MP3/WAV...")
 
@@ -305,4 +306,4 @@ if __name__ == "__main__":
         print(f"\nAn unexpected error occurred during the example execution: {e}")
 
     print("audio_loader.py example finished.")
-    print("\n#--------------------------------------------------------------------------------------------------------------------------")
+    print("\n#============================================================================================================")
