@@ -248,29 +248,6 @@ if __name__ == "__main__":
     #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
     actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","SCHAMMASCH-Split-My-Tongue.mp3")
 
-
-    """ 
-            [REMOVE AFTER TESTING]      
-      testing results - automatic tempo detection audio_processor.py # 2
-        test_num, filename, actual_tempo, tempo_detector 
-        1,test1__147bpm,147,147.66
-        2,test2__150bpm,150,100.84*
-        3,test3__177bpm,177,191.41*
-        4,test4__185bpm,185,159.01**
-        5,test5__195bpm,195,191.41
-        6,test6__198bpm,198,198.77
-        7,test7__205bpm,205,206.72
-
-       SCHAMMASCH-Split-My-Tongue.mp3:
-       1. Estimated Tempo (estimate_tempo): 113.21 BPM
-       2. _Estimated Tempo (_estimate_tempo): 
-
-       ACTUAL TEMPO: ~104 BPM
-
-    
-    """
-
-
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
         audio, sr = load_audio(actual_drum_recording_path, sr=44100)
