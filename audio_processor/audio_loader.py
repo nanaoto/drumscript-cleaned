@@ -161,8 +161,9 @@ if __name__ == "__main__":
 
         # --- Estimate tempo using Tempogram-First Approach ---------------------------------------------------------
         bpm= estimate_tempo(normalised_audio, sr) #  (Tempogram-First), estimate_tempo function above
-        print(f"       1. Estimated Tempo (Filtered Median): {bpm:.2f} BPM")
-
+        #print(f"       Estimated Tempo (Tempogram-First): {bpm:.2f} BPM")
+        print(f"       Estimated Tempo (Tempogram-First): {int(round(bpm))} BPM") # rounded and changed to integer for a clean output
+        
         # --- Keyboard interruption logic ---------------------------------------------------------
         # 1. Define a function that waits for Enter and then stops the audio
         def stop_playback_on_enter():
