@@ -141,3 +141,7 @@ audio_processor/audio_loader__new.md
 audio_processor/audio_loader__new.py
 audio_processor/error.txt
 audio_processor/tempo_test_notes.txt
+audio_processor/tempogram.png
+audio_processor/tempogram.py
+visuals/tempogram.png
+visuals/**
