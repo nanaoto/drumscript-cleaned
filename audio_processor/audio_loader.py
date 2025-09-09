@@ -1,5 +1,5 @@
 # DrumScript/audio_processor/audio_loader.py
-# -----------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------
 """
 This module handles loading and basic normalisation of audio files. It also offers automatic playback of the audio once loaded, which can be terminated using Enter. It also contains a function for automatic tempo detection. All three functions are applied when run.
 """
@@ -75,70 +75,48 @@ def normalise_audio(audio_data: np.ndarray) -> np.ndarray:
         normalised_data = audio_data # Already zero or empty
     return normalised_data
 
-# 3. Automatic tempo detection function (Tempogram-first): ------------------------------------------------
 
-def estimate_tempo(audio_data, sr):
+# 3. Audio playback function: -------------------------------------------------------------------------------
+
+def _prompt_user_for_playback() -> bool:
     """
-    Estimates tempo from the tempogram, but restricted to a plausible range.
-    (Corrected to avoid INF and extreme BPM errors, ie 10500 BPM).
+    Prompts the user whether to play the audio and returns their choice.
+
+    Returns:
+        bool: True if the user wants to play, False otherwise.
     """
-    if audio_data.size == 0:
-        return 0.0
-    oenv = librosa.onset.onset_strength(y=audio_data, sr=sr, hop_length=256)
-    tempogram = librosa.feature.tempogram(onset_envelope=oenv, sr=sr, hop_length=256)
-    tempo_spectrum = np.sum(tempogram, axis=1)
-    tempo_freqs = librosa.tempo_frequencies(tempogram.shape[0], sr=sr, hop_length=256)
-    
-    # --- FIX for extreme BPM error ---
-    # Create a mask to only consider tempos in a plausible musical range (e.g., 60-240 BPM)
-    plausible_tempos_mask = (tempo_freqs >= 60) & (tempo_freqs <= 240)
-    
-    # Find the index of the peak within the plausible range
-    plausible_spectrum = tempo_spectrum[plausible_tempos_mask]
-    if plausible_spectrum.size == 0:
-        return 120.0 # Return default if no energy in plausible range
-        
-    peak_idx_in_plausible_range = np.argmax(plausible_spectrum)
-    
-    # Convert that index back to a BPM value
-    plausible_tempo_freqs = tempo_freqs[plausible_tempos_mask]
-    estimated_bpm = plausible_tempo_freqs[peak_idx_in_plausible_range]
-    
-    return estimated_bpm
+    response = input("Audio loaded. Would you like to play it? (yes/no): ").strip().lower()
+    return response == 'yes' or response == 'y'
 
-# --- OPTIONAL BLOCK - uncomment to use ---------------------------------------------------
-## --- Produces visualisation of tempogram of audio and saves in .audio_processor/ child folder as 'tempogram.png'
-## --- This optional function may be used by testers and contributors for visualising the tempo of a song
-### --- NOTE: Please also uncomment respective lines in __main__ block if using this function
+def play_audio(audio_data: np.ndarray, sr: int):
+    """
+    Plays the provided audio data with an option to stop via user input.
+    """
+    # Define a function that waits for Enter and then stops the audio
+    def stop_playback_on_enter():
+        input("Audio is playing. Press Enter to stop...\n")
+        sd.stop()
+        print("Playback stopped by user.")
 
-#def visualise_tempogram(audio_data, sr, hop_length=256, output_path="tempogram.png"):
- #   """
-  #  Calculates and saves a tempogram visualization for the given audio.
-   # """
-    #oenv = librosa.onset.onset_strength(y=audio_data, sr=sr, hop_length=hop_length)
-    #tempogram = librosa.feature.tempogram(onset_envelope=oenv, sr=sr, hop_length=hop_length)
-    #global_tempo = estimate_tempo(audio_data, sr)
+    # Start the audio playback (this is non-blocking)
+    print("\nPlaying loaded audio...")
+    sd.play(audio_data, sr)
 
-    #fig, ax = plt.subplots(figsize=(12, 6))
-    #librosa.display.specshow(tempogram, sr=sr, hop_length=hop_length, 
-                             #x_axis='time', y_axis='tempo', cmap='magma', ax=ax)
-    #ax.axhline(global_tempo, color='w', linestyle='--', alpha=0.8, label=f'Global Tempo: {global_tempo:.2f} BPM')
-    #ax.set_title('Tempogram')
-    #ax.legend(loc='upper right')
-    #fig.colorbar(ax.get_children()[0], ax=ax, label='Energy')
-    #plt.tight_layout()
+    # Start the listener function in a background thread
+    listener_thread = threading.Thread(target=stop_playback_on_enter, daemon=True)
+    listener_thread.start()
 
-    #plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    #plt.close(fig) # Close the figure to free up memory
-    #print(f"Tempogram saved to: {output_path}")
-
-# =================================================================================================================
+    # Wait for playback to finish (either naturally or by being stopped)
+    sd.wait()
+    print("Audio playback finished.")
+# ==========================================================================================================
 # MAIN BLOCK
 if __name__ == "__main__":
     # We need the threading module to listen for input in the background
     import threading
+    from audio_processor.tempo_detector import estimate_tempo
     
-    print("\n#===================================================================================================")
+    print("\n#=============================================================================================")
     print("Running audio_loader.py example with actual MP3/WAV...")
 
     # --- Path to audio file ---
@@ -197,6 +175,6 @@ if __name__ == "__main__":
         print(f"\nAn unexpected error occurred during the example execution: {e}")
 
     print("audio_loader.py example finished.")
-    print("\n#===================================================================================================")
+    print("\n#==============================================================================================")
         
-# -----------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------
