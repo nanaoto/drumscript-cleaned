@@ -7,11 +7,8 @@ This module contains functions for automatic tempo detection from audio data.
 
 import librosa
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import librosa.display
-
+import os
+from .audio_loader import load_audio, normalise_audio
 # --- Define function --------------------------------------------------------------------------------------------
 
 def estimate_tempo(audio_data, sr):
@@ -46,9 +43,6 @@ def estimate_tempo(audio_data, sr):
 # MAIN BLOCK - for local testing of this function
 
 if __name__ == "__main__":
-    import os
-    from audio_loader import load_audio, normalise_audio
-    
     # --- Path to audio file ---
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))

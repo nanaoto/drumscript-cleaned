@@ -1,17 +1,18 @@
 # DrumScript/audio_processor/tempo_detector.py
 # ------------------------------------------------------------------------------------------------------------
 """
-This module contains functions for automatic tempo detection from audio data.
+This module contains functions for visualising tempo using librosa's tempogram function
 """
 # Import packages: ------------------------------------------------------------------------------------------------
-
 import librosa
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import librosa.display
-from audio_processor.tempo_detector import estimate_tempo
+import os
+from .audio_loader import load_audio, normalise_audio
+from .tempo_detector import estimate_tempo
 
 # --- Define function --------------------------------------------------------------------------------------------
 def visualise_tempogram(audio_data, sr, hop_length=256, output_path="tempogram.png"):

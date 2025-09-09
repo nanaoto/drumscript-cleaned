@@ -1,7 +1,9 @@
 # DrumScript/audio_processor/audio_loader.py
 # ------------------------------------------------------------------------------------------------------
+
 """
-This module handles loading and basic normalisation of audio files. It also offers automatic playback of the audio once loaded, which can be terminated using Enter. It also contains a function for automatic tempo detection. All three functions are applied when run.
+This module handles loading and basic normalisation of audio files.
+It also contains the main execution block to demonstrate the workflow.
 """
 # Import packages: ------------------------------------------------------------------------------------------------
 
@@ -9,15 +11,8 @@ import librosa
 import numpy as np
 import os
 import sounddevice as sd
-import time # for pausing listenable audio
-import scipy
 import threading
-import matplotlib
-matplotlib.use('Agg') # Set the backend to 'Agg' to prevent conflicts between plotting and threading, Mac OS (untested on other OS)
-from scipy.signal import find_peaks
-from scipy.stats import norm
-import matplotlib.pyplot as plt
-import librosa.display
+from audio_processor.tempo_detector import estimate_tempo
 
 # --- Define functions --------------------------------------------------------------------------------------------
 # 1. Load audio file : -------------------------------------------------------------------------------
@@ -92,89 +87,48 @@ def play_audio(audio_data: np.ndarray, sr: int):
     """
     Plays the provided audio data with an option to stop via user input.
     """
-    # Define a function that waits for Enter and then stops the audio
     def stop_playback_on_enter():
         input("Audio is playing. Press Enter to stop...\n")
         sd.stop()
         print("Playback stopped by user.")
 
-    # Start the audio playback (this is non-blocking)
     print("\nPlaying loaded audio...")
     sd.play(audio_data, sr)
 
-    # Start the listener function in a background thread
     listener_thread = threading.Thread(target=stop_playback_on_enter, daemon=True)
     listener_thread.start()
 
-    # Wait for playback to finish (either naturally or by being stopped)
     sd.wait()
     print("Audio playback finished.")
+
 # ==========================================================================================================
 # MAIN BLOCK
 if __name__ == "__main__":
-    # We need the threading module to listen for input in the background
-    import threading
-    from audio_processor.tempo_detector import estimate_tempo
-    
     print("\n#=============================================================================================")
     print("Running audio_loader.py example with actual MP3/WAV...")
 
-    # --- Path to audio file ---
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-    #actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test.wav")
     actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test3__177bpm.mp3")
 
-        
     try:
-        # --- Load audio file provided ---------------------------------------------------------
         print(f"Attempting to load: {actual_drum_recording_path}")
         audio, sr = load_audio(actual_drum_recording_path, sr=44100)
         print(f"Loaded audio: Shape={audio.shape}, Sample Rate={sr}, Duration={len(audio)/sr:.2f} seconds")
 
-        # Normalise and check the audio
         normalised_audio = normalise_audio(audio)
         normalised_max = np.max(np.abs(normalised_audio))
         assert np.isclose(normalised_max, 1.0) or np.isclose(normalised_max, 0.0), "Normalisation failed!"
 
-        # --- Estimate tempo using Tempogram-First Approach ---------------------------------------------------------
-        bpm= estimate_tempo(normalised_audio, sr) #  (Tempogram-First), estimate_tempo function above
-        #print(f"       Estimated Tempo (Tempogram-First): {bpm:.2f} BPM")
-        print(f"       Estimated Tempo (Tempogram-First): {int(round(bpm))} BPM") # rounded and changed to integer for a clean output
-        
-        # --- Keyboard interruption logic ---------------------------------------------------------
-        # 1. Define a function that waits for Enter and then stops the audio
-        def stop_playback_on_enter():
-            input("Audio is playing. Press Enter to stop...\n")
-            sd.stop()
-            print("Playback stopped by user.")
+        bpm = estimate_tempo(normalised_audio, sr)
+        print(f"Estimated Tempo (Tempogram-First): {int(round(bpm))} BPM")
 
-        # 2. Start the audio playback (this is non-blocking)
-        print("\nPlaying loaded (and normalised) audio...")
-        sd.play(normalised_audio, sr)
-
-        # 3. Start the listener function in a background thread
-        #    'daemon=True' means the thread won't prevent the script from exiting
-        listener_thread = threading.Thread(target=stop_playback_on_enter, daemon=True)
-        listener_thread.start()
-
-        # 4. Wait for playback to finish (either naturally or by being stopped)
-        sd.wait()
-        print("Audio playback finished.")
-
-
-    # --- OPTIONAL BLOCK - uncomment to use -------------------------------------------------------
-    ## --- Produces visualisation of tempogram of audio and saves in .audio_processor/ child folder as 'tempogram.png'
-    ## --- This optional function may be used by testers and contributors for visualising the tempo of a song
-        # We save the image in the same directory as the script
-        # output_image_path = os.path.join(current_script_dir, "tempogram.png")
-        #visualise_tempogram(normalised_audio, sr, output_path=output_image_path)
-    # ---------------------------------------------------------------------------------------------
+        if _prompt_user_for_playback():
+            play_audio(normalised_audio, sr)
 
     except Exception as e:
         print(f"\nAn unexpected error occurred during the example execution: {e}")
 
     print("audio_loader.py example finished.")
     print("\n#==============================================================================================")
-        
 # -------------------------------------------------------------------------------------------------------------
