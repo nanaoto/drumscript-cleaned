@@ -41,7 +41,8 @@ def visualise_tempogram(audio_data, sr, hop_length=256, output_path="tempogram.p
 # MAIN BLOCK - for local testing of this function
 
 if __name__ == "__main__":
-    
+    from .audio_loader import load_audio, normalise_audio
+
     parser = argparse.ArgumentParser(description="Generate a tempogram visualization for a given audio file.")
     parser.add_argument("audio_file_path", type=str,
                         help="Path to the audio file to be processed.")
@@ -60,7 +61,7 @@ if __name__ == "__main__":
 
         # Visualise the tempogram
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
+        project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir))
         output_image_path = os.path.join(project_root, "visuals", "tempogram.png")
         visualise_tempogram(normalised_audio, sr, output_path=output_image_path)
         

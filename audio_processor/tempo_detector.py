@@ -9,7 +9,6 @@ import librosa
 import numpy as np
 import os
 import argparse
-from .audio_loader import load_audio, normalise_audio
 # --- Define function --------------------------------------------------------------------------------------------
 
 def estimate_tempo(audio_data, sr):
@@ -44,7 +43,7 @@ def estimate_tempo(audio_data, sr):
 # MAIN BLOCK - for local testing of this function
 
 if __name__ == "__main__":
-    
+    from .audio_loader import load_audio, normalise_audio
     parser = argparse.ArgumentParser(description="Estimate the tempo of an audio file.")
     parser.add_argument("audio_file_path", type=str,
                         help="Path to the audio file to be processed.")
