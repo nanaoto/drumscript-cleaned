@@ -2,7 +2,7 @@
 
 
 <!--date_created: sun-15-june-2025-->
-<!--date_updated: fri-15-august-2025-->
+<!--date_updated: weds-10-sept-2025-->
 
 ---
 ### **Modular Structure**
@@ -34,6 +34,8 @@ This document outlines the directory and file structure of the `DrumScript` proj
 │   │   ├── __init__.py
 │   │   ├── audio_loader.py        # Loads and normalises audio files
 │   │   ├── onset_detector.py      # Detects drum hit onsets
+│   │   ├── tempo_detector.py      # Estimates the tempo (BPM) of an audio file
+│   │   ├── tempogram.py           # Generates a visual representation of the audio's tempo
 │   │   └── feature_extractor.py   # Extracts features for classification
 ├── data_labeller/                 # PYTHON MODULE: For building custom drum training data and datasets for ML-purposes
 │   │   ├── __init__.py
@@ -101,7 +103,17 @@ This module handles all the raw audio manipulation and initial feature extractio
     * **Functions:**
         * `load_audio(file_path, sr=None)`: Loads audio, optionally resamples to a target sample rate (`sr`).
         * `normalise_audio(audio_data)`: Normalizes amplitude to a standard range (-1.0 to 1.0).
-
+  * **`tempo_detector.py`**:
+      * **Purpose:** Estimates the tempo of an audio file in beats per minute (BPM).
+      * **Scientific Principle:** This is achieved by analyzing the **tempogram**, a representation of rhythmic patterns over time. The model identifies the most prominent rhythmic pulse in the audio.
+      * **Functions:**
+          * `estimate_tempo(audio_data, sr)`: Takes audio data and its sample rate to return a tempo value.
+> 
+  * **`tempogram.py`**:
+      * **Purpose:** Generates a visual representation of the tempogram, which can be useful for debugging and analysis.
+      * **Scientific Principle:** The script visualizes the rhythmic energy of the audio across different tempos, with higher intensity indicating a more prominent tempo at that point in time. It overlays the estimated tempo from `tempo_detector.py` on the graph.
+      * **Functions:**
+          * `visualise_tempogram(audio_data, sr)`: Creates a plot and saves it as an image file.
 >
 * **`onset_detector.py`**:
     * **Purpose:** Identify the precise time points where drum hits occur.
