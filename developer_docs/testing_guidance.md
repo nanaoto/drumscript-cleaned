@@ -1,7 +1,7 @@
 ## **Testing Documentation**
 
 <!--date_created: sat-21-june-2025-->
-<!--date_updated: thurs-26-june-2025-->
+<!--date_updated: weds-10-sept-2025-->
 
 `DrumScript` is a `Python package` that **converts drum audio recordings into sheet music (drum notation) in PDF format**. 
 
@@ -12,31 +12,36 @@ It leverages **advanced audio signal processing** and **machine learning** to de
 ---
 ### Modules
 
+
 #### **`audio_processor/`**
 
 #####  `audio_loader.py`
 
 
 ```
-python3 audio_processor/audio_loader.py
+
+python3 audio_processor/audio_loader.py <path_to_audio_file.mp3>
+
 ```
 
 
 **expected output:**
 
     Running audio_loader.py example with actual MP3/WAV...
-    Attempting to load: ~DrumScript/tests/test.mp3
+    Attempting to load: <path_to_audio_file.mp3>
     Loaded audio: Shape=(324288,), Sample Rate=22050, Duration=14.71 seconds
     Original max amplitude: 0.9660
     Normalised max amplitude: 1.0000
         
     Playing loaded (and normalised) audio...
         
-    # test.mp3 will play
+    # my_test_file.mp3 will play
 
 
     Audio playback finished.
     audio_loader.py example finished.
+
+
 
 
 
@@ -159,6 +164,37 @@ onset_detector.py example finished.
 DrumScript %  -
 ```
 
+
+##### `tempo_detector.py`
+
+```
+python3 audio_processor/tempo_detector.py <path_to_audio_file.mp3>
+```
+
+**expected output:**
+
+```
+Attempting to load: my_test_file.mp3
+Loaded audio: Shape=(324288,), Sample Rate=44100, Duration=14.71 seconds
+Estimated Tempo: 177 BPM
+
+```
+
+##### `tempogram.py`
+
+```
+python3 audio_processor/tempogram.py <path_to_audio_file.mp3>
+```
+
+**expected output:**
+
+```
+Attempting to load: my_test_file.mp3
+Loaded audio: Shape=(324288,), Sample Rate=44100, Duration=14.71 seconds
+Estimated Tempo: 177 BPM
+Tempogram saved to: `DrumScript/visuals/tempogram.png`
+
+```
 #### **`drum_classifier/`**
 
 #####  `data_preparer.py`

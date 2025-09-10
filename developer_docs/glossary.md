@@ -16,7 +16,8 @@
      - **Pitch tracking:** Estimating the **fundamental frequency** of a **sound**.
      - **Onset detection:** Finding the **precise moments where sounds begin** (like a *snare hit*).
 
-  In `DrumScript`, `librosa` is crucial because it's the underlying library that `audio_loader.py`, `feature_extractor.py`, and `onset_detector.py` use to actually perform the **low-level audio processing** and extract the characteristics of your **drum sound** and **audio recordings**
+   In `DrumScript`, `librosa` is crucial because it's the underlying library that `audio_loader.py`, `feature_extractor.py`, and `onset_detector.py` use to actually perform the **low-level audio processing** and extract the characteristics of your **drum sound** and **audio recordings**. `Librosa`'s beat and tempo detection functions are specifically used in the `tempo_detector.py` and `tempogram.py` scripts.
+   
 <!--## **[`MuseScore`](https://github.com/musescore/MuseScore)**-->
 ## [`MuseScore`](#musescore)
    - [`MuseScore`](https://musescore.org/) [source code here](https://github.com/musescore/MuseScore) is a popular, free, and open-source **music notation software**. It provides a comprehensive environment for **creating, editing, printing**, and **playing back sheet music**.

@@ -1,7 +1,7 @@
 ## **DrumScript**
 
 <!--date_created: sun-15-june-2025-->
-<!--date_updated: sat-23-july-2025-->
+<!--date_updated: weds-10-sept-2025-->
 
 > **Python 3.12.10**
 
@@ -36,6 +36,8 @@ It leverages **advanced audio signal processing** and **machine learning** to de
 
 * **Audio Input:** Supports common audio formats such as `.mp3`
 * **Drum Hit Detection:** Identifies the precise timing of drum strikes.
+* **Automatic Tempo Detection:** Estimates the tempo (BPM) of an audio file for accurate musical quantization.
+* **Tempo Visualisation:** Generates a visual representation of the audio's rhythmic pulse.
 * **Drum Classification:** Differentiates between various drum kit elements (e.g., kick, snare, hi-hat).
 * **Musical Quantization:** Aligns detected drum hits to a musical grid for accurate notation.
 * **PDF Sheet Music Output:** Generates clear and readable drum notation.
