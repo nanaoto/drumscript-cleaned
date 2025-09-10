@@ -12,6 +12,7 @@ import numpy as np
 import os
 import sounddevice as sd
 import threading
+import argparse # for command-line argument parsing
 from audio_processor.tempo_detector import estimate_tempo
 
 # --- Define functions --------------------------------------------------------------------------------------------
@@ -102,15 +103,20 @@ def play_audio(audio_data: np.ndarray, sr: int):
     print("Audio playback finished.")
 
 # ==========================================================================================================
-# MAIN BLOCK
+# MAIN BLOCK
 if __name__ == "__main__":
     print("\n#=============================================================================================")
     print("Running audio_loader.py example with actual MP3/WAV...")
 
-    current_script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-    actual_drum_recording_path = os.path.join(project_root,"DrumScript/test_audio","test3__177bpm.mp3")
-
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="Load and process an audio file for DrumScript.")
+    parser.add_argument("audio_file_path", type=str,
+                        help="Path to the audio file to be processed.")
+    
+    # Parse the command-line arguments
+    args = parser.parse_args()
+    actual_drum_recording_path = args.audio_file_path
+    
     try:
         print(f"Attempting to load: {actual_drum_recording_path}")
         audio, sr = load_audio(actual_drum_recording_path, sr=44100)
@@ -130,5 +136,4 @@ if __name__ == "__main__":
         print(f"\nAn unexpected error occurred during the example execution: {e}")
 
     print("audio_loader.py example finished.")
-    print("\n#==============================================================================================")
-# -------------------------------------------------------------------------------------------------------------
+    print("\n#==============================================================================================") 

@@ -8,6 +8,7 @@ This module contains functions for automatic tempo detection from audio data.
 import librosa
 import numpy as np
 import os
+import argparse
 from .audio_loader import load_audio, normalise_audio
 # --- Define function --------------------------------------------------------------------------------------------
 
@@ -39,14 +40,16 @@ def estimate_tempo(audio_data, sr):
     estimated_bpm = plausible_tempo_freqs[peak_idx_in_plausible_range]
     
     return estimated_bpm
-# ===========================================================================================================
-# MAIN BLOCK - for local testing of this function
+# =====================================================================================================
+# MAIN BLOCK - for local testing of this function
 
 if __name__ == "__main__":
-    # --- Path to audio file ---
-    current_script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-    actual_drum_recording_path = os.path.join(project_root, "DrumScript/test_audio", "test3__177bpm.mp3")
+    
+    parser = argparse.ArgumentParser(description="Estimate the tempo of an audio file.")
+    parser.add_argument("audio_file_path", type=str,
+                        help="Path to the audio file to be processed.")
+    args = parser.parse_args()
+    actual_drum_recording_path = args.audio_file_path
 
     try:
         # Load and normalise the audio
@@ -58,14 +61,9 @@ if __name__ == "__main__":
         bpm = estimate_tempo(normalised_audio, sr)
         print(f"Estimated Tempo: {int(round(bpm))} BPM")
 
-        # Visualise the tempogram
-        #output_image_path = os.path.join(current_script_dir, "tempogram.png")
-        #visualise_tempogram(normalised_audio, sr, output_path=output_image_path)
-        
     except Exception as e:
         print(f"\nAn unexpected error occurred: {e}")
     print("\n#==================================================================================================")
         
-#-----------------------------------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------------------------------
     

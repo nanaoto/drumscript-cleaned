@@ -11,6 +11,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import librosa.display
 import os
+import argparse
 from .audio_loader import load_audio, normalise_audio
 from .tempo_detector import estimate_tempo
 
@@ -37,16 +38,15 @@ def visualise_tempogram(audio_data, sr, hop_length=256, output_path="tempogram.p
     print(f"Tempogram saved to: {output_path}")
 
 # ===========================================================================================================
-# MAIN BLOCK - for local testing of this function
+# MAIN BLOCK - for local testing of this function
 
 if __name__ == "__main__":
-    import os
-    from audio_loader import load_audio, normalise_audio
     
-    # --- Path to audio file ---
-    current_script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
-    actual_drum_recording_path = os.path.join(project_root, "DrumScript/test_audio", "test3__177bpm.mp3")
+    parser = argparse.ArgumentParser(description="Generate a tempogram visualization for a given audio file.")
+    parser.add_argument("audio_file_path", type=str,
+                        help="Path to the audio file to be processed.")
+    args = parser.parse_args()
+    actual_drum_recording_path = args.audio_file_path
 
     try:
         # Load and normalise the audio
@@ -59,7 +59,9 @@ if __name__ == "__main__":
         print(f"Estimated Tempo: {int(round(bpm))} BPM")
 
         # Visualise the tempogram
-        output_image_path = os.path.join(current_script_dir, "../visuals/tempogram.png") # stored on root
+        current_script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.abspath(os.path.join(current_script_dir, os.pardir, os.pardir))
+        output_image_path = os.path.join(project_root, "visuals", "tempogram.png")
         visualise_tempogram(normalised_audio, sr, output_path=output_image_path)
         
     except Exception as e:
