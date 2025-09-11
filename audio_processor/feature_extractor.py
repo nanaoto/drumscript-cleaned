@@ -9,6 +9,8 @@ import librosa
 import os
 import soundfile
 import math # Added for math.floor to calculate EXPECTED_N_FRAMES
+import argparse # for command-line argument parsing
+
 
 # --- Configuration (Mirroring model_trainer.py for consistency) ---
 # These should ideally be imported from a central 'constants.py'
@@ -90,19 +92,25 @@ def extract_features(audio_segment: np.ndarray, sr: int) -> np.ndarray:
 if __name__ == '__main__':
     # This block is for testing the feature_extractor.py script directly.
     import os
-    from audio_loader import load_audio
+    #from audio_loader import load_audio
+    from audio_loader import load_audio, normalise_audio
+    parser = argparse.ArgumentParser(description="Extract features from an audio file")
+    parser.add_argument("audio_file_path", type=str,
+                        help="Path to the audio file to be processed.")
+    args = parser.parse_args()
+    actual_drum_recording_path = args.audio_file_path
+    print(f'actual_drum_recording_path:{actual_drum_recording_path}')
 
-    print("--- Running feature_extractor.py example ---")
+    print(f"--- Running feature_extractor.py example on `{actual_drum_recording_path}`---")
 
-    # Use a relative path to make the script more portable
     try:
-        # Construct path to the test audio file
-        script_dir = os.path.dirname(__file__)
-        #test_audio_path = os.path.join(script_dir, '..', 'test_audio', 'test.wav')
-        test_audio_path = os.path.join(script_dir, '..', 'test_audio', 'SCHAMMASCH-Split-My-Tongue.mp3')
+        # Load and normalise the audio
+        print(f"Attempting to load: {actual_drum_recording_path}")
+        audio, sr = load_audio(actual_drum_recording_path, sr=44100)
+        normalised_audio = normalise_audio(audio)
         
-        print(f"Attempting to load: {test_audio_path}")
-        audio_data, sample_rate = load_audio(test_audio_path, sr=SAMPLE_RATE)
+        print(f"Attempting to load: {normalised_audio}")
+        audio_data, sample_rate = load_audio(normalised_audio, sr=SAMPLE_RATE)
         
         print(f"Loaded audio: Shape={audio_data.shape}, Sample Rate={sample_rate}")
 

@@ -107,7 +107,7 @@ def play_audio(audio_data: np.ndarray, sr: int):
 if __name__ == "__main__":
     from audio_processor.tempo_detector import estimate_tempo
     print("\n#=============================================================================================")
-    print("Running audio_loader.py example with actual MP3/WAV...")
+    print("Running audio_loader.py example with actual MP3/WAV...")  # FUTURE: Find way to encode this so it prints the file path provided in CLI
 
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Load and process an audio file for DrumScript.")
