@@ -16,17 +16,17 @@
     </scaling>
   </defaults>
   <part-list>
-    <score-part id="P599cc3b7fe41cd678d437c99cfd5cab8">
+    <score-part id="Pf730b0c27f857e6b1277ab7271d9590a">
       <part-name>Percussion</part-name>
       <part-abbreviation>Perc</part-abbreviation>
-      <score-instrument id="I0d34d9a908be183836aa5a432c17e26d">
+      <score-instrument id="I535a0100ddf4b52bf3ec696cacadb073">
         <instrument-name>Percussion</instrument-name>
         <instrument-abbreviation>Perc</instrument-abbreviation>
       </score-instrument>
     </score-part>
   </part-list>
   <!--=========================== Part 1 ===========================-->
-  <part id="P599cc3b7fe41cd678d437c99cfd5cab8">
+  <part id="Pf730b0c27f857e6b1277ab7271d9590a">
     <!--========================= Measure 1 ==========================-->
     <measure implicit="no" number="1">
       <attributes>
