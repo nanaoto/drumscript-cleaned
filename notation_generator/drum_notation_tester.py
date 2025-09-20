@@ -4,7 +4,7 @@
 import json
 import subprocess
 import music21
-from music21 import stream, note, chord, meter, clef, instrument
+from music21 import stream, note, chord, meter, clef, instrument, beam
 
 def generate_drum_score(events, tempo=120, output_filename="drum_test_score"):
     """
@@ -48,7 +48,6 @@ def generate_drum_score(events, tempo=120, output_filename="drum_test_score"):
             midi_pitches = [event['midi_pitch'] for event in group]
             n = chord.Chord(midi_pitches)
         
-        # --- NEW CLEANUP SECTION ---
         # 1. Remove accidentals (sharps/flats) from the pitches.
         if n.isChord:
             for p in n.pitches:
@@ -57,8 +56,7 @@ def generate_drum_score(events, tempo=120, output_filename="drum_test_score"):
             n.pitch.accidental = None
 
         # 2. Remove beams (the "tails" connecting notes).
-        n.beams.setAll('none')
-        # --- END NEW CLEANUP SECTION ---
+        n.beams = beam.Beams()
         
         n.duration.quarterLength = duration_qn
         drum_part.insert(offset, n)
