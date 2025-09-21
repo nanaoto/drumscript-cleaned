@@ -48,16 +48,32 @@ def generate_drum_score(events, tempo=120, output_filename="drum_test_score"):
             midi_pitches = [event['midi_pitch'] for event in group]
             n = chord.Chord(midi_pitches)
         
-        # 1. Remove accidentals (sharps/flats) from the pitches.
-        if n.isChord:
+        #### CLEAN UP SECTION (REMOVE COMMENTS AFTER TESTING)=========
+        # --- Hide accidentals without changing the note's pitch --- 
+        if n.isChord: 
             for p in n.pitches:
-                p.accidental = None
-        else:
-            n.pitch.accidental = None
+                if p.accidental: # Check if an accidental exists
+                    p.accidental.displayStatus = False
 
-        # 2. Remove beams (the "tails" connecting notes).
+        else:
+            if n.pitch.accidental: # Check if an accidental exists
+                n.pitch.accidental.displayStatus = False
+        # --- Remove beams (the "tails" connecting notes). --- 
         n.beams = beam.Beams()
         
+
+        # 1. Remove accidentals (sharps/flats) from the pitches.
+        #if n.isChord:
+         #   for p in n.pitches:
+          #      p.accidental = None 
+        #
+        #else:
+         #   n.pitch.accidental = None
+
+        # 2. Remove beams (the "tails" connecting notes).
+        #n.beams = beam.Beams()
+        #
+        #=============================================================
         n.duration.quarterLength = duration_qn
         drum_part.insert(offset, n)
 
