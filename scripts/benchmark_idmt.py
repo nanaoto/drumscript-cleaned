@@ -58,6 +58,7 @@ IDMT_TO_DS = {
     "SD": ["snare"],
     "HH": ["hi_hat_closed", "hi_hat_open"],
 }
+DATASET_GROUPS = ("RealDrum", "WaveDrum", "TechnoDrum")
 
 ONSET_WINDOW = 0.050  # 50ms tolerance (standard in ADT literature)
 GM_PITCH_TO_IDMT = {
@@ -261,11 +262,41 @@ def run_drumscript(wav_path: Path) -> dict[str, list[float]]:
     return {k: sorted(v) for k, v in per_instrument.items()}
 
 
-def evaluate_file(mix_path: Path) -> dict | None:
+def evaluate_file(
+    mix_path: Path,
+    debug_annotations: bool = False,
+    annotations_only: bool = False,
+) -> dict | None:
     """
     Evaluate one MIX file. Returns per-instrument metrics dict or None on error.
     """
     print(f"  {mix_path.name}")
+
+    reference_onsets = {}
+    for idmt_code in IDMT_TO_DS:
+        ann_path = get_annotation_path(mix_path, idmt_code)
+        if ann_path is None:
+            print(f"    [WARN] No annotation found for {idmt_code}, skipping.")
+            continue
+
+        ref_onsets = parse_svl_annotation(ann_path, idmt_code)
+        if debug_annotations:
+            print(
+                f"    [ANNOTATION] {idmt_code}: {ann_path.relative_to(find_dataset_root(mix_path))} "
+                f"-> {len(ref_onsets)} onsets"
+            )
+
+        if len(ref_onsets) == 0:
+            print(f"    [WARN] Empty annotation for {idmt_code}, skipping.")
+            continue
+
+        reference_onsets[idmt_code] = ref_onsets
+
+    if annotations_only:
+        return {code: {"n_ref": len(onsets)} for code, onsets in reference_onsets.items()}
+
+    if not reference_onsets:
+        return {}
 
     try:
         predictions = run_drumscript(mix_path)
@@ -275,16 +306,8 @@ def evaluate_file(mix_path: Path) -> dict | None:
 
     file_metrics = {}
 
-    for idmt_code, ds_labels in IDMT_TO_DS.items():
-        ann_path = get_annotation_path(mix_path, idmt_code)
-        if ann_path is None:
-            print(f"    [WARN] No annotation found for {idmt_code}, skipping.")
-            continue
-
-        ref_onsets = parse_svl_annotation(ann_path, idmt_code)
-        if len(ref_onsets) == 0:
-            print(f"    [WARN] Empty annotation for {idmt_code}, skipping.")
-            continue
+    for idmt_code, ref_onsets in reference_onsets.items():
+        ds_labels = IDMT_TO_DS[idmt_code]
 
         # Merge all DrumScript hits that correspond to this IDMT instrument
         est_times = []
@@ -328,11 +351,35 @@ def summarise(all_results: list[dict]) -> dict:
     return summary
 
 
+def dataset_group(mix_path: Path) -> str:
+    """Infer IDMT subset/source group from the file prefix."""
+    for group in DATASET_GROUPS:
+        if mix_path.name.startswith(group):
+            return group
+    return "Unknown"
+
+
+def summarise_by_group(all_results: list[dict], mix_paths: list[Path]) -> dict[str, dict]:
+    grouped = defaultdict(list)
+    for path, result in zip(mix_paths, all_results):
+        if result:
+            grouped[dataset_group(path)].append(result)
+    return {group: summarise(results) for group, results in grouped.items()}
+
+
+def print_summary(title: str, summary: dict) -> None:
+    print(title)
+    print(f"{'Instrument':<12} {'Precision':>10} {'Recall':>10} {'F-measure':>10}")
+    print("-" * 44)
+    for inst, m in summary.items():
+        print(f"{inst:<12} {m['precision']:>10.3f} {m['recall']:>10.3f} {m['f_measure']:>10.3f}")
+
+
 def write_csv(all_file_results: list[dict], mix_paths: list[Path], output_path: Path):
     instruments = list(IDMT_TO_DS.keys())
     with open(output_path, "w", newline="") as f:
         writer = csv.writer(f)
-        header = ["file"]
+        header = ["file", "group"]
         for inst in instruments:
             header += [f"{inst}_P", f"{inst}_R", f"{inst}_F", f"{inst}_n_ref", f"{inst}_n_est"]
         writer.writerow(header)
@@ -340,7 +387,7 @@ def write_csv(all_file_results: list[dict], mix_paths: list[Path], output_path: 
         for path, res in zip(mix_paths, all_file_results):
             if res is None:
                 continue
-            row = [path.name]
+            row = [path.name, dataset_group(path)]
             for inst in instruments:
                 m = res.get(inst, {})
                 row += [
@@ -372,6 +419,10 @@ def main():
                         help="Output CSV path (default: benchmark_results.csv)")
     parser.add_argument("--limit", type=int, default=None,
                         help="Only process first N files (useful for quick smoke tests)")
+    parser.add_argument("--debug-annotations", action="store_true",
+                        help="Print matched annotation file and parsed onset count per instrument")
+    parser.add_argument("--annotations-only", action="store_true",
+                        help="Only verify annotation parsing; skip DrumScript transcription and metrics")
     args = parser.parse_args()
 
     dataset_dir = Path(args.dataset)
@@ -389,11 +440,19 @@ def main():
     print(f"Subset  : {args.subset or 'all'}")
     print(f"Files   : {len(mix_files)}")
     print(f"Window  : {int(ONSET_WINDOW * 1000)}ms\n")
+    if (dataset_dir / "parseXMLAnnotations.m").exists():
+        print("Parser  : Python equivalent of IDMT parseXMLAnnotations.m")
+    if args.annotations_only:
+        print("Mode    : annotations only\n")
     print("─" * 60)
 
     all_results = []
     for mix_path in mix_files:
-        result = evaluate_file(mix_path)
+        result = evaluate_file(
+            mix_path,
+            debug_annotations=args.debug_annotations,
+            annotations_only=args.annotations_only,
+        )
         all_results.append(result)
 
     valid_results = [r for r in all_results if r]
@@ -401,12 +460,22 @@ def main():
     print("\n" + "─" * 60)
     print(f"Evaluated {len(valid_results)} / {len(mix_files)} files successfully.\n")
 
+    if args.annotations_only:
+        return
+
     summary = summarise(valid_results)
-    print("── SUMMARY (macro-average across files) ──")
-    print(f"{'Instrument':<12} {'Precision':>10} {'Recall':>10} {'F-measure':>10}")
-    print("-" * 44)
-    for inst, m in summary.items():
-        print(f"{inst:<12} {m['precision']:>10.3f} {m['recall']:>10.3f} {m['f_measure']:>10.3f}")
+    print_summary("── SUMMARY (macro-average across files) ──", summary)
+
+    group_summaries = summarise_by_group(all_results, mix_files)
+    if len(group_summaries) > 1 or "Unknown" not in group_summaries:
+        print("\n── SUMMARY BY DATASET GROUP ──")
+        for group in DATASET_GROUPS:
+            if group in group_summaries:
+                print()
+                print_summary(f"[{group}]", group_summaries[group])
+        if "Unknown" in group_summaries:
+            print()
+            print_summary("[Unknown]", group_summaries["Unknown"])
 
     output_path = Path(args.output)
     write_csv(all_results, mix_files, output_path)
