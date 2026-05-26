@@ -149,6 +149,10 @@ def _parse_idmt_xml_events(
 def _idmt_code_for_event(event: ET.Element) -> str | None:
     instrument = (_child_text(event, "instrument") or "").lower()
     pitch_text = _child_text(event, "pitch")
+    instrument_code = instrument.upper()
+
+    if instrument_code in IDMT_TO_DS:
+        return instrument_code
 
     if "kick" in instrument or "bass" in instrument:
         return "KD"
