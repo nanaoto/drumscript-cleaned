@@ -60,6 +60,16 @@ IDMT_TO_DS = {
 }
 
 ONSET_WINDOW = 0.050  # 50ms tolerance (standard in ADT literature)
+GM_PITCH_TO_IDMT = {
+    35: "KD",
+    36: "KD",
+    37: "SD",
+    38: "SD",
+    40: "SD",
+    42: "HH",
+    44: "HH",
+    46: "HH",
+}
 
 
 def parse_svl_annotation(
@@ -68,8 +78,16 @@ def parse_svl_annotation(
     sr: int = 44100,
 ) -> np.ndarray:
     """
-    Parse a Sonic Visualiser Layer (.svl) or plain XML annotation file.
+    Parse a Sonic Visualiser Layer (.svl) or IDMT XML annotation file.
     Returns a sorted numpy array of onset times in seconds.
+
+    IDMT XML format:
+        <event>
+            <instrument>...</instrument>
+            <pitch>36</pitch>
+            <onsetSec>0.123</onsetSec>
+            <offsetSec>0.456</offsetSec>
+        </event>
 
     IDMT SVL format:
         <sv><data><dataset id="1" dimensions="1">
@@ -82,6 +100,10 @@ def parse_svl_annotation(
     try:
         tree = ET.parse(svl_path)
         root = tree.getroot()
+
+        xml_event_onsets = _parse_idmt_xml_events(root, instrument_code)
+        if xml_event_onsets is not None:
+            return xml_event_onsets
 
         onset_times = []
         for elem in root.iter():
@@ -101,6 +123,51 @@ def parse_svl_annotation(
     except ET.ParseError as e:
         print(f"  [WARN] Could not parse {svl_path.name}: {e}")
         return np.array([])
+
+
+def _parse_idmt_xml_events(
+    root: ET.Element,
+    instrument_code: str | None,
+) -> np.ndarray | None:
+    events = list(root.iter("event"))
+    if not events:
+        return None
+
+    onset_times = []
+    for event in events:
+        event_code = _idmt_code_for_event(event)
+        if instrument_code and event_code != instrument_code:
+            continue
+
+        onset = _child_text(event, "onsetSec")
+        if onset is not None:
+            onset_times.append(float(onset))
+
+    return np.array(sorted(onset_times))
+
+
+def _idmt_code_for_event(event: ET.Element) -> str | None:
+    instrument = (_child_text(event, "instrument") or "").lower()
+    pitch_text = _child_text(event, "pitch")
+
+    if "kick" in instrument or "bass" in instrument:
+        return "KD"
+    if "snare" in instrument:
+        return "SD"
+    if "hat" in instrument or "hihat" in instrument or "hi-hat" in instrument:
+        return "HH"
+
+    if pitch_text is not None:
+        return GM_PITCH_TO_IDMT.get(int(float(pitch_text)))
+
+    return None
+
+
+def _child_text(elem: ET.Element, tag: str) -> str | None:
+    child = elem.find(tag)
+    if child is None or child.text is None:
+        return None
+    return child.text.strip()
 
 
 def _element_label(elem: ET.Element) -> str:
@@ -156,12 +223,12 @@ def get_annotation_path(mix_path: Path, instrument_code: str) -> Path | None:
     mix_stem = mix_path.stem
     base_stem = mix_stem.replace("#MIX", "")
     filename_patterns = [
-        f"{base_stem}#{instrument_code}*.svl",
+        f"{mix_stem}.xml",
+        f"{base_stem}*.xml",
         f"{base_stem}#{instrument_code}*.xml",
         f"{mix_stem}.svl",
-        f"{mix_stem}.xml",
         f"{base_stem}*.svl",
-        f"{base_stem}*.xml",
+        f"{base_stem}#{instrument_code}*.svl",
     ]
 
     for annotation_dir in annotation_dirs_for(mix_path):
