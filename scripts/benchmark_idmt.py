@@ -11,11 +11,13 @@ Dataset download: https://zenodo.org/record/7544164
 
 The dataset must be unzipped. Expected structure:
     IDMT-SMT-DRUMS-V2/
+    audio/
         RealDrum01_00#MIX.wav
-        RealDrum01_00#KD.svl   (or .xml)
-        RealDrum01_00#SD.svl
-        RealDrum01_00#HH.svl
-        ...
+    annotation_svl/
+        RealDrum01_00#MIX.svl
+    annotation_xml/
+        RealDrum01_00#MIX.xml
+    ...
 
 Metrics (via mir_eval, 50ms onset window):
     Per instrument: Precision / Recall / F-measure
@@ -60,7 +62,11 @@ IDMT_TO_DS = {
 ONSET_WINDOW = 0.050  # 50ms tolerance (standard in ADT literature)
 
 
-def parse_svl_annotation(svl_path: Path, sr: int = 44100) -> np.ndarray:
+def parse_svl_annotation(
+    svl_path: Path,
+    instrument_code: str | None = None,
+    sr: int = 44100,
+) -> np.ndarray:
     """
     Parse a Sonic Visualiser Layer (.svl) or plain XML annotation file.
     Returns a sorted numpy array of onset times in seconds.
@@ -71,39 +77,98 @@ def parse_svl_annotation(svl_path: Path, sr: int = 44100) -> np.ndarray:
         </dataset></data></sv>
 
     The <point frame="..."> attribute is in audio samples at `sr`.
+    When `instrument_code` is provided, labeled points are filtered to KD/SD/HH.
     """
     try:
         tree = ET.parse(svl_path)
         root = tree.getroot()
 
-        frames = []
-        # Handle both direct <point> children and nested <dataset><point>
-        for point in root.iter("point"):
-            frame = point.get("frame")
-            if frame is not None:
-                frames.append(int(frame))
+        onset_times = []
+        for elem in root.iter():
+            label = _element_label(elem)
+            if instrument_code and label and instrument_code not in label:
+                continue
 
-        if not frames:
+            time_value = _element_time_seconds(elem, sr)
+            if time_value is not None:
+                onset_times.append(time_value)
+
+        if not onset_times:
             return np.array([])
 
-        onset_times = np.array(sorted(frames)) / sr
-        return onset_times
+        return np.array(sorted(onset_times))
 
     except ET.ParseError as e:
         print(f"  [WARN] Could not parse {svl_path.name}: {e}")
         return np.array([])
 
 
+def _element_label(elem: ET.Element) -> str:
+    label_parts = []
+    for key in ("label", "name", "instrument", "class", "type"):
+        value = elem.get(key)
+        if value:
+            label_parts.append(value.upper())
+    if elem.text:
+        label_parts.append(elem.text.upper())
+    return " ".join(label_parts)
+
+
+def _element_time_seconds(elem: ET.Element, sr: int) -> float | None:
+    for key in ("frame", "sample", "sampleIndex", "sample_index"):
+        value = elem.get(key)
+        if value is not None:
+            return float(value) / sr
+
+    for key in ("time", "onset", "start", "timestamp"):
+        value = elem.get(key)
+        if value is not None:
+            return float(value)
+
+    return None
+
+
+def find_dataset_root(path: Path) -> Path:
+    for parent in [path, *path.parents]:
+        if (parent / "annotation_svl").is_dir() or (parent / "annotation_xml").is_dir():
+            return parent
+    return path
+
+
+def annotation_dirs_for(mix_path: Path) -> list[Path]:
+    dataset_root = find_dataset_root(mix_path)
+    candidates = [
+        mix_path.parent,
+        dataset_root / "annotation_svl",
+        dataset_root / "annotation_xml",
+    ]
+    return [path for path in candidates if path.is_dir()]
+
+
 def get_annotation_path(mix_path: Path, instrument_code: str) -> Path | None:
     """
-    Given  RealDrum01_00#MIX.wav  and  'KD',
-    returns RealDrum01_00#KD.svl  (or .xml if .svl not found).
+    Given  audio/RealDrum01_00#MIX.wav  and  'KD',
+    returns the matching annotation from annotation_svl/ or annotation_xml/.
+
+    IDMT commonly stores one annotation file per MIX with KD/SD/HH labels, but
+    this also supports per-instrument annotation files if present.
     """
-    stem = mix_path.stem.replace("#MIX", "")
-    for ext in [".svl", ".xml", ".SVL", ".XML"]:
-        candidate = mix_path.parent / f"{stem}#{instrument_code}{ext}"
-        if candidate.exists():
-            return candidate
+    mix_stem = mix_path.stem
+    base_stem = mix_stem.replace("#MIX", "")
+    filename_patterns = [
+        f"{base_stem}#{instrument_code}*.svl",
+        f"{base_stem}#{instrument_code}*.xml",
+        f"{mix_stem}.svl",
+        f"{mix_stem}.xml",
+        f"{base_stem}*.svl",
+        f"{base_stem}*.xml",
+    ]
+
+    for annotation_dir in annotation_dirs_for(mix_path):
+        for pattern in filename_patterns:
+            matches = sorted(annotation_dir.rglob(pattern))
+            if matches:
+                return matches[0]
     return None
 
 
@@ -145,7 +210,7 @@ def evaluate_file(mix_path: Path) -> dict | None:
             print(f"    [WARN] No annotation found for {idmt_code}, skipping.")
             continue
 
-        ref_onsets = parse_svl_annotation(ann_path)
+        ref_onsets = parse_svl_annotation(ann_path, idmt_code)
         if len(ref_onsets) == 0:
             print(f"    [WARN] Empty annotation for {idmt_code}, skipping.")
             continue
@@ -208,13 +273,19 @@ def write_csv(all_file_results: list[dict], mix_paths: list[Path], output_path: 
             for inst in instruments:
                 m = res.get(inst, {})
                 row += [
-                    f"{m.get('precision', ''):.4f}",
-                    f"{m.get('recall', ''):.4f}",
-                    f"{m.get('f_measure', ''):.4f}",
+                    format_optional_float(m.get("precision")),
+                    format_optional_float(m.get("recall")),
+                    format_optional_float(m.get("f_measure")),
                     m.get("n_ref", ""),
                     m.get("n_est", ""),
                 ]
             writer.writerow(row)
+
+
+def format_optional_float(value) -> str:
+    if value is None or value == "":
+        return ""
+    return f"{float(value):.4f}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
