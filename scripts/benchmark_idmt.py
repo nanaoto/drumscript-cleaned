@@ -209,9 +209,9 @@ def find_dataset_root(path: Path) -> Path:
 def annotation_dirs_for(mix_path: Path) -> list[Path]:
     dataset_root = find_dataset_root(mix_path)
     candidates = [
+        dataset_root / "annotation_xml",
         mix_path.parent,
         dataset_root / "annotation_svl",
-        dataset_root / "annotation_xml",
     ]
     return [path for path in candidates if path.is_dir()]
 
